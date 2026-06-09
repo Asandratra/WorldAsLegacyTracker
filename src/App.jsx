@@ -360,11 +360,147 @@ const css = `
   }
   .delta-row input { max-width: 70px; text-align: center; }
   .delta-label { font-size: 13px; color: var(--text-dim); }
+
+  /* ── Dice Roller ── */
+  .dice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .dice-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .dice-label {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    min-width: 40px;
+  }
+  .dice-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .dice-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+  }
+  .dice-btn:hover:not(:disabled) {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+  .dice-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .dice-count {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+  }
+  .dice-pool {
+    background: rgba(201,151,58,0.05);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .dice-pool-label { color: var(--text-dim); margin-bottom: 6px; }
+  .dice-pool-content { display: flex; justify-content: space-between; align-items: center; }
+  .dice-pool-formula { color: var(--gold); font-weight: 600; }
+  .dice-range { display: flex; gap: 12px; font-size: 12px; }
+  .dice-range-item { display: flex; flex-direction: column; }
+  .dice-range-label { color: var(--text-dim); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .dice-range-value { color: var(--gold); font-weight: 600; font-family: 'Cinzel', serif; }
+  .dice-result {
+    background: linear-gradient(135deg, rgba(201,151,58,0.2), rgba(201,151,58,0.08));
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+  }
+  .dice-history {
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(201,151,58,0.03);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .dice-history-title {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .dice-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .dice-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 12px;
+  }
+  .dice-history-formula {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .dice-history-value {
+    color: var(--gold);
+    font-weight: 600;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+  }
+  .dice-history-time {
+    color: var(--text-dim);
+    font-size: 10px;
+    margin-left: 8px;
+  }
 `;
 
 const EMOJIS = ["⚔️","🛡️","🧙","🏹","🗡️","🔮","💀","🐉","🦅","🐺","🧝","🔥","❄️","⚡","🌑","🍀"];
-
-const XP_THRESHOLDS = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000, 85000, 100000];
+const DICE_TYPES = [4, 6, 10, 16, 20, 24, 60, 100];
 
 function newCharacter(name = "New Adventurer") {
   return {
@@ -373,7 +509,6 @@ function newCharacter(name = "New Adventurer") {
     class: "",
     race: "",
     emoji: "⚔️",
-    level: 1,
     xp: 0,
     hp: 10,
     maxHp: 10,
@@ -391,15 +526,161 @@ function modifier(val) {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
-function xpForNextLevel(level) {
-  return XP_THRESHOLDS[Math.min(level, XP_THRESHOLDS.length - 1)] ?? 999999;
-}
+// ── Dice Roller ──
+function DiceRoller({ pool, onPoolChange }) {
+  const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
 
-function xpPercent(xp, level) {
-  const prev = XP_THRESHOLDS[Math.min(level - 1, XP_THRESHOLDS.length - 1)] ?? 0;
-  const next = xpForNextLevel(level);
-  if (next <= prev) return 100;
-  return Math.min(100, Math.round(((xp - prev) / (next - prev)) * 100));
+  const addDie = (faces) => {
+    const newPool = { ...pool, [faces]: (pool[faces] || 0) + 1 };
+    onPoolChange(newPool);
+  };
+
+  const removeDie = (faces) => {
+    const newPool = { ...pool };
+    if (newPool[faces] > 1) {
+      newPool[faces]--;
+    } else {
+      delete newPool[faces];
+    }
+    onPoolChange(newPool);
+  };
+
+  const clearPool = () => {
+    onPoolChange({});
+    setResult(null);
+  };
+
+  const getTotalDice = () => {
+    return Object.values(pool).reduce((sum, count) => sum + count, 0);
+  };
+
+  const getMinValue = () => getTotalDice();
+
+  const getMaxValue = () => {
+    return Object.entries(pool).reduce((sum, [faces, count]) => {
+      return sum + (parseInt(faces) * count);
+    }, 0);
+  };
+
+  const rollDice = () => {
+    let total = 0;
+    Object.entries(pool).forEach(([faces, count]) => {
+      const f = parseInt(faces);
+      for (let i = 0; i < count; i++) {
+        total += Math.floor(Math.random() * f) + 1;
+      }
+    });
+    setResult(total);
+    
+    const formula = Object.entries(pool)
+      .sort(([a], [b]) => parseInt(b) - parseInt(a))
+      .map(([f, c]) => `${c}d${f}`)
+      .join(" + ");
+    const timestamp = new Date();
+    setHistory([{ formula, result: total, time: timestamp }, ...history]);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
+  const totalDice = getTotalDice();
+  const minVal = getMinValue();
+  const maxVal = getMaxValue();
+  const hasPool = totalDice > 0;
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      <div className="section-title">Dice Roller</div>
+      
+      {/* Dice controls */}
+      <div className="dice-grid">
+        {DICE_TYPES.map(faces => (
+          <div key={faces} className="dice-row">
+            <div className="dice-label">d{faces}</div>
+            <div className="dice-controls">
+              <button
+                className="dice-btn"
+                onClick={() => removeDie(faces)}
+                disabled={!pool[faces]}
+                title="Remove one die"
+              >
+                −
+              </button>
+              <div className="dice-count">{pool[faces] || 0}</div>
+              <button
+                className="dice-btn"
+                onClick={() => addDie(faces)}
+                title="Add one die"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pool display */}
+      {hasPool && (
+        <div className="dice-pool">
+          <div className="dice-pool-label">Roll:</div>
+          <div className="dice-pool-content">
+            <div className="dice-pool-formula">
+              {Object.entries(pool)
+                .sort(([a], [b]) => parseInt(b) - parseInt(a))
+                .map(([f, c]) => `${c}d${f}`)
+                .join(" + ")}
+            </div>
+            <div className="dice-range">
+              <div className="dice-range-item">
+                <div className="dice-range-label">Min</div>
+                <div className="dice-range-value">{minVal}</div>
+              </div>
+              <div className="dice-range-item">
+                <div className="dice-range-label">Max</div>
+                <div className="dice-range-value">{maxVal}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result display */}
+      {result !== null && (
+        <div className="dice-result">🎲 {result}</div>
+      )}
+
+      {/* Action buttons */}
+      {hasPool && (
+        <div className="btn-row">
+          <button className="btn primary" onClick={rollDice}>Roll</button>
+          <button className="btn danger" onClick={clearPool}>Clear</button>
+        </div>
+      )}
+
+      {/* Roll history */}
+      {history.length > 0 && (
+        <div className="dice-history">
+          <div className="dice-history-title">History</div>
+          <div className="dice-history-list">
+            {history.map((entry, idx) => (
+              <div key={idx} className="dice-history-item">
+                <div style={{ flex: 1 }}>
+                  <div className="dice-history-formula">{entry.formula}</div>
+                </div>
+                <div className="dice-history-value">{entry.result}</div>
+                <div className="dice-history-time">
+                  {entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="btn danger" onClick={clearHistory} style={{ marginTop: 8, fontSize: 10 }}>Clear History</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── Stat box ──
@@ -432,9 +713,7 @@ function CharacterSheet({ char, onChange, onDelete }) {
   };
 
   const hpPct = char.maxHp > 0 ? Math.min(100, (char.hp / char.maxHp) * 100) : 0;
-  const xpPct = xpPercent(char.xp, char.level);
-  const nextXp = xpForNextLevel(char.level);
-
+  
   return (
     <>
       {/* Identity */}
@@ -485,25 +764,7 @@ function CharacterSheet({ char, onChange, onDelete }) {
 
       {/* Level & XP */}
       <div className="card">
-        <div className="section-title">Progression</div>
-        <div className="xp-meta">
-          <div className="level-badge">LEVEL {char.level}</div>
-          <div className="xp-text">{char.xp} / {nextXp} XP</div>
-        </div>
-        <div className="xp-bar-wrap">
-          <div className="xp-bar-fill" style={{ width: `${xpPct}%` }} />
-        </div>
         <div className="field-row" style={{ marginTop: 12 }}>
-          <div className="field-group">
-            <div className="label">Level</div>
-            <input type="number" min={1} max={20} value={char.level}
-              onChange={e => update("level", Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))} />
-          </div>
-          <div className="field-group">
-            <div className="label">Total XP</div>
-            <input type="number" min={0} value={char.xp}
-              onChange={e => update("xp", Math.max(0, parseInt(e.target.value) || 0))} />
-          </div>
           <div className="field-group">
             <div className="label">Gold 🪙</div>
             <input type="number" min={0} value={char.gold}
@@ -604,6 +865,7 @@ export default function App() {
     } catch { /* empty */ }
     return null;
   });
+  const [dicePool, setDicePool] = useState({});
 
   const fileRef = useRef();
 
@@ -681,6 +943,9 @@ export default function App() {
             <button className="tab add-btn" onClick={addCharacter}>+ Add</button>
           )}
         </div>
+
+        {/* Dice Roller */}
+        <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
 
         {/* Active sheet */}
         {active ? (
