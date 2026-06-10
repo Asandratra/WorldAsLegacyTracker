@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EMOJIS } from "../utils/character.js";
+import { EMOJIS } from "../utils/Character.js";
 
 export default function EmojiPicker({ value, onChange }) {
   const [open, setOpen] = useState(false);

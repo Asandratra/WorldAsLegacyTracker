@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   ITEM_TYPES, EQUIPMENT_SLOTS, WEAPON_HAND_TYPES,
   createBlankEntry,
-} from "../utils/inventory.js";
+} from "../utils/Inventory.js";
 
 const KIND_LABELS = { item: "Item", equipment: "Equipment", weapon: "Weapon" };
 

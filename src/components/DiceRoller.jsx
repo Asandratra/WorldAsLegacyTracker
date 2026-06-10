@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DICE_TYPES } from "../utils/character.js";
+import { DICE_TYPES } from "../utils/Character.js";
 
 export default function DiceRoller({ pool, onPoolChange }) {
   const [result, setResult] = useState(null);

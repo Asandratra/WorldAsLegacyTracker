@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { ABILITY_STATS, newEquipped } from "../utils/character.js";
+import { ABILITY_STATS, newEquipped } from "../utils/Character.js";
 import EmojiPicker from "./EmojiPicker.jsx";
 import HpTracker from "./HpTracker.jsx";
 import StatBox from "./StatBox.jsx";

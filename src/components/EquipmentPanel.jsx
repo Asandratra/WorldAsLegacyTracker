@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { newEquipped } from "../utils/character.js";
+import { newEquipped } from "../utils/Character.js";
 
 const SLOT_LABELS = { head: "Head", upper: "Upper", lower: "Lower" };
 

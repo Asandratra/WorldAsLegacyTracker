@@ -1,5 +1,5 @@
 import { useState, memo, useCallback } from "react";
-import { itemKindLabel } from "../utils/inventory.js";
+import { itemKindLabel } from "../utils/Inventory.js";
 import AddItemModal from "./AddItemModal.jsx";
 
 function isSlotOccupied(equipped, slot) {

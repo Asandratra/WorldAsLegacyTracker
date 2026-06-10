@@ -1,4 +1,4 @@
-import { modifier } from "../utils/character.js";
+import { modifier } from "../utils/Character.js";
 
 export default function StatBox({ label, value, onChange }) {
   return (
