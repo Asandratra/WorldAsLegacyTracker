@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss } from "./styles/globalCss.js";
-import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/character.js";
+import { globalCss, equipmentCss } from "./styles/GlobalCSS.js";
+import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
 import DiceRoller from "./components/DiceRoller.jsx";
