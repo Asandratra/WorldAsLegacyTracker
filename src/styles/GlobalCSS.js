@@ -770,6 +770,23 @@ export const equipmentCss = `
     margin-top: 2px;
   }
 
+  .equip-slot-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--gold-dim);
+    vertical-align: middle;
+  }
+
+  .equip-slot-dual {
+    border-color: var(--gold-dim);
+  }
+
   .equip-unequip-btn {
     flex-shrink: 0;
     padding: 3px 8px;

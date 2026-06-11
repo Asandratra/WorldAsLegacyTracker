@@ -22,7 +22,6 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
     [char, onChange]
   );
 
-  // Normalise equipped — memoised so child refs stay stable when unrelated fields change
   const equipped = useMemo(() => ({
     ...newEquipped(),
     ...(char.equipped ?? {}),
@@ -34,17 +33,34 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
     [char.inventory]
   );
 
-  const handleEquip = useCallback((item) => {
-    const slot = item.slot;
+  /**
+   * onEquip(item, hand)
+   *   hand: "right_hand" | "left_hand" | "both" | equipment slot string
+   */
+  const handleEquip = useCallback((item, hand) => {
     const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
 
-    if (slot === "accessory") {
-      const idx = nextEquipped.accessories.findIndex(a => a === null);
-      if (idx === -1) return;
-      nextEquipped.accessories[idx] = item;
-    } else {
-      if (nextEquipped[slot] !== null) return;
-      nextEquipped[slot] = item;
+    if (item.kind === "weapon") {
+      if (hand === "both") {
+        // Dual-hand: occupy both slots with the same item object
+        if (nextEquipped.right_hand !== null || nextEquipped.left_hand !== null) return;
+        nextEquipped.right_hand = item;
+        nextEquipped.left_hand  = item;
+      } else {
+        // Single-hand: equip to the chosen hand
+        if (nextEquipped[hand] !== null) return;
+        nextEquipped[hand] = item;
+      }
+    } else if (item.kind === "equipment") {
+      const slot = item.slot;
+      if (slot === "accessory") {
+        const idx = nextEquipped.accessories.findIndex(a => a === null);
+        if (idx === -1) return;
+        nextEquipped.accessories[idx] = item;
+      } else {
+        if (nextEquipped[slot] !== null) return;
+        nextEquipped[slot] = item;
+      }
     }
 
     onChange({
@@ -54,6 +70,10 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
     });
   }, [char, equipped, inventory, onChange]);
 
+  /**
+   * onUnequip(slot, accessoryIndex?)
+   *   slot: "head"|"upper"|"lower"|"right_hand"|"left_hand"|"both_hands"|"accessory"
+   */
   const handleUnequip = useCallback((slot, accessoryIndex) => {
     const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
     let returnedItem;
@@ -62,6 +82,12 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
       returnedItem = nextEquipped.accessories[accessoryIndex];
       if (!returnedItem) return;
       nextEquipped.accessories[accessoryIndex] = null;
+    } else if (slot === "both_hands") {
+      // Dual-hand weapon — both slots hold the same ref, return once
+      returnedItem = nextEquipped.right_hand;
+      if (!returnedItem) return;
+      nextEquipped.right_hand = null;
+      nextEquipped.left_hand  = null;
     } else {
       returnedItem = nextEquipped[slot];
       if (!returnedItem) return;
@@ -120,24 +146,14 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
       </div>
 
       {/* HP & Armor */}
-      <HpTracker
-        hp={char.hp}
-        maxHp={char.maxHp}
-        armor={char.armor}
-        onUpdate={updateMany}
-      />
+      <HpTracker hp={char.hp} maxHp={char.maxHp} armor={char.armor} onUpdate={updateMany} />
 
       {/* Ability scores */}
       <div className="card">
         <div className="section-title">Ability Scores</div>
         <div className="stats-grid">
           {ABILITY_STATS.map(stat => (
-            <StatBox
-              key={stat}
-              label={stat.toUpperCase()}
-              value={char[stat]}
-              onChange={v => update(stat, v)}
-            />
+            <StatBox key={stat} label={stat.toUpperCase()} value={char[stat]} onChange={v => update(stat, v)} />
           ))}
         </div>
       </div>

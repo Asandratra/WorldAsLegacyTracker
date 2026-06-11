@@ -8,7 +8,51 @@ function isSlotOccupied(equipped, slot) {
   return equipped[slot] !== null;
 }
 
-const ItemRow = memo(function ItemRow({ entry, onIncrement, onDecrement, onDelete, onEquip, slotFull }) {
+/** Buttons shown on a weapon row in inventory */
+const WeaponEquipButtons = memo(function WeaponEquipButtons({ entry, equipped, onEquip }) {
+  const isDual = entry.hand_type === "dual_hand";
+  const rightFull = equipped?.right_hand !== null;
+  const leftFull  = equipped?.left_hand  !== null;
+  const eitherFull = rightFull || leftFull;
+
+  if (isDual) {
+    return (
+      <button
+        className="inv-equip-btn"
+        onClick={() => onEquip(entry, "both")}
+        disabled={eitherFull}
+        title={eitherFull ? "Both hands must be free" : "Equip two-handed"}
+      >
+        Equip 2H
+      </button>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+      <button
+        className="inv-equip-btn"
+        onClick={() => onEquip(entry, "right_hand")}
+        disabled={rightFull}
+        title={rightFull ? "Right hand occupied" : "Equip to right hand"}
+      >
+        R
+      </button>
+      <button
+        className="inv-equip-btn"
+        onClick={() => onEquip(entry, "left_hand")}
+        disabled={leftFull}
+        title={leftFull ? "Left hand occupied" : "Equip to left hand"}
+      >
+        L
+      </button>
+    </div>
+  );
+});
+
+const ItemRow = memo(function ItemRow({
+  entry, onIncrement, onDecrement, onDelete, onEquip, equipped, slotFull,
+}) {
   const badge = itemKindLabel(entry);
 
   const subLine = () => {
@@ -33,16 +77,22 @@ const ItemRow = memo(function ItemRow({ entry, onIncrement, onDecrement, onDelet
         {entry.description && <div className="inv-desc">{entry.description}</div>}
         {sub && <div className="inv-sub">{sub}</div>}
       </div>
+
+      {entry.kind === "weapon" && (
+        <WeaponEquipButtons entry={entry} equipped={equipped} onEquip={onEquip} />
+      )}
+
       {entry.kind === "equipment" && (
         <button
           className="inv-equip-btn"
-          onClick={() => onEquip(entry)}
+          onClick={() => onEquip(entry, entry.slot)}
           disabled={slotFull}
           title={slotFull ? "Remove equipped item first" : `Equip to ${entry.slot}`}
         >
           Equip
         </button>
       )}
+
       {entry.kind === "item" && (
         <div className="inv-qty-controls">
           <button className="inv-qty-btn remove" onClick={onDecrement}>−</button>
@@ -50,6 +100,7 @@ const ItemRow = memo(function ItemRow({ entry, onIncrement, onDecrement, onDelet
           <button className="inv-qty-btn" onClick={onIncrement}>+</button>
         </div>
       )}
+
       <button className="inv-delete-btn" onClick={onDelete} title="Remove">✕</button>
     </div>
   );

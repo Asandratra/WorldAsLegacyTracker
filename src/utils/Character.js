@@ -3,7 +3,14 @@ export const DICE_TYPES = [4, 6, 10, 16, 20, 24, 60, 100];
 export const ABILITY_STATS = ["str","dex","con","int","wis","cha"];
 
 export function newEquipped() {
-  return { head: null, upper: null, lower: null, accessories: [null, null, null] };
+  return {
+    head: null,
+    upper: null,
+    lower: null,
+    accessories: [null, null, null],
+    right_hand: null,
+    left_hand: null,
+  };
 }
 
 export function newCharacter(name = "New Adventurer") {

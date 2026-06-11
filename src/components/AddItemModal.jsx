@@ -105,7 +105,7 @@ export default function AddItemModal({ onAdd, onClose }) {
               </div>
               <div className="modal-field">
                 <div className="label">Block</div>
-                <input type="number" min={0} value={form.block_power} onChange={e => set("pierce_power", parseInt(e.target.value) || 0)} />
+                <input type="number" min={0} value={form.block_power} onChange={e => set("block_power", parseInt(e.target.value) || 0)} />
               </div>
             </div>
           </>
