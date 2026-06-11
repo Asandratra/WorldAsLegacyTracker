@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss, skillCss } from "./styles/globalCss.js";
+import { globalCss, equipmentCss, skillCss } from "./styles/GlobalCSS.js";
 import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
