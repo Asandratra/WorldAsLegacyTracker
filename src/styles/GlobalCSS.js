@@ -835,3 +835,235 @@ export const equipmentCss = `
     color: var(--text-dim);
   }
 `;
+
+export const skillCss = `
+  /* ── Skill rows (skillbook modal) ── */
+  .skill-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    transition: border-color 0.15s;
+  }
+  .skill-row.equipped {
+    border-color: var(--gold-dim);
+    background: rgba(201,151,58,0.04);
+  }
+  .skill-row + .skill-row { margin-top: 6px; }
+
+  .skill-badge {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .skill-badge.active  { background: rgba(176,48,48,0.2); border: 1px solid var(--red-dim); color: #e07070; }
+  .skill-badge.passive { background: rgba(74,124,78,0.2); border: 1px solid #2d5c31; color: #7fbf85; }
+  .skill-badge.sm      { width: 28px; height: 28px; font-size: 8px; }
+
+  .skill-info { flex: 1; overflow: hidden; min-width: 0; }
+
+  .skill-name {
+    font-size: 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .skill-name.sm { font-size: 13px; }
+
+  .skill-mastery-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--gold-dim);
+    background: rgba(201,151,58,0.1);
+    border: 1px solid var(--gold-dim);
+    border-radius: 2px;
+    padding: 1px 4px;
+  }
+
+  .skill-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 2px;
+    line-height: 1.4;
+    /* allow wrapping in modal */
+    white-space: normal;
+  }
+
+  .skill-meta-row {
+    display: flex;
+    gap: 5px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .skill-meta-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .skill-meta-tag.passive { border-color: #2d5c31; color: #7fbf85; background: rgba(74,124,78,0.1); }
+  .skill-meta-tag.type    { border-color: var(--gold-dim); color: var(--gold-dim); background: rgba(201,151,58,0.06); }
+  .skill-meta-tag.power   { border-color: var(--red-dim); color: #e07070; background: rgba(176,48,48,0.08); }
+  .skill-meta-primary     { opacity: 0.6; }
+
+  .skill-costs {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.5px;
+  }
+
+  .skill-row-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .skill-action-btn {
+    width: 26px; height: 26px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+  .skill-action-btn.equip:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .skill-action-btn.unequip:hover { border-color: var(--red-dim); color: var(--red); }
+  .skill-action-btn.delete:hover  { border-color: var(--red-dim); color: var(--red); opacity: 1; }
+  .skill-action-btn:disabled      { opacity: 0.25; cursor: not-allowed; }
+
+  /* ── Skillbook modal specifics ── */
+  .skillbook-modal {
+    display: flex;
+    flex-direction: column;
+    max-height: 88vh;
+  }
+  .skillbook-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .skillbook-counter {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 1px;
+  }
+  .skillbook-list {
+    flex: 1;
+    overflow-y: auto;
+    margin: 10px 0;
+    padding-right: 2px;
+  }
+  .skillbook-list::-webkit-scrollbar { width: 3px; }
+  .skillbook-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── Equipped skills panel (in character sheet) ── */
+  .equipped-skill-list { display: flex; flex-direction: column; gap: 5px; }
+
+  .skill-group-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin: 6px 0 3px;
+  }
+  .skill-group-label:first-child { margin-top: 0; }
+
+  .equipped-skill-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .equipped-skill-row.passive { opacity: 0.8; }
+
+  .skill-inline-meta {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+    align-items: center;
+  }
+  .skill-type-pill {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.5px;
+  }
+  .skill-cost-pill {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .skill-cost-pill.mp  { border-color: #3a4a9a; color: #7b8ff5; background: rgba(74,90,190,0.1); }
+  .skill-cost-pill.exh { border-color: #7a4a00; color: #c97820; background: rgba(122,74,0,0.1); }
+
+  .skill-use-btn {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border: 1px solid var(--gold-dim);
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    margin-left: auto;
+  }
+  .skill-use-btn:hover:not(:disabled) { background: rgba(201,151,58,0.12); }
+  .skill-use-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: var(--border); color: var(--text-dim); }
+
+  .skill-slot-count {
+    font-size: 11px;
+    color: var(--gold-dim);
+    font-family: 'Cinzel', serif;
+    margin-left: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Add skill modal: passive toggle ── */
+  .skill-passive-row { margin-bottom: 10px; }
+  .skill-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .skill-toggle-label input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+`;

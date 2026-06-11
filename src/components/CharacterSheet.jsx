@@ -5,18 +5,17 @@ import HpTracker from "./HpTracker.jsx";
 import StatBox from "./StatBox.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
+import SkillPanel from "./SkillPanel.jsx";
 
 export default function CharacterSheet({ char, onChange, onDelete }) {
   const update = useCallback(
     (field, val) => onChange({ ...char, [field]: val }),
     [char, onChange]
   );
-
   const updateMany = useCallback(
     (fields) => onChange({ ...char, ...fields }),
     [char, onChange]
   );
-
   const updateInventory = useCallback(
     (inv) => onChange({ ...char, inventory: inv }),
     [char, onChange]
@@ -32,22 +31,24 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
     () => Array.isArray(char.inventory) ? char.inventory : [],
     [char.inventory]
   );
+  const skillset = useMemo(
+    () => Array.isArray(char.skillset) ? char.skillset : [],
+    [char.skillset]
+  );
+  const equippedSkills = useMemo(
+    () => Array.isArray(char.equippedSkills) ? char.equippedSkills : [],
+    [char.equippedSkills]
+  );
 
-  /**
-   * onEquip(item, hand)
-   *   hand: "right_hand" | "left_hand" | "both" | equipment slot string
-   */
+  /* ── equipment handlers ── */
   const handleEquip = useCallback((item, hand) => {
     const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
-
     if (item.kind === "weapon") {
       if (hand === "both") {
-        // Dual-hand: occupy both slots with the same item object
         if (nextEquipped.right_hand !== null || nextEquipped.left_hand !== null) return;
         nextEquipped.right_hand = item;
         nextEquipped.left_hand  = item;
       } else {
-        // Single-hand: equip to the chosen hand
         if (nextEquipped[hand] !== null) return;
         nextEquipped[hand] = item;
       }
@@ -62,28 +63,17 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
         nextEquipped[slot] = item;
       }
     }
-
-    onChange({
-      ...char,
-      inventory: inventory.filter(e => e.id !== item.id),
-      equipped: nextEquipped,
-    });
+    onChange({ ...char, inventory: inventory.filter(e => e.id !== item.id), equipped: nextEquipped });
   }, [char, equipped, inventory, onChange]);
 
-  /**
-   * onUnequip(slot, accessoryIndex?)
-   *   slot: "head"|"upper"|"lower"|"right_hand"|"left_hand"|"both_hands"|"accessory"
-   */
   const handleUnequip = useCallback((slot, accessoryIndex) => {
     const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
     let returnedItem;
-
     if (slot === "accessory") {
       returnedItem = nextEquipped.accessories[accessoryIndex];
       if (!returnedItem) return;
       nextEquipped.accessories[accessoryIndex] = null;
     } else if (slot === "both_hands") {
-      // Dual-hand weapon — both slots hold the same ref, return once
       returnedItem = nextEquipped.right_hand;
       if (!returnedItem) return;
       nextEquipped.right_hand = null;
@@ -93,13 +83,27 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
       if (!returnedItem) return;
       nextEquipped[slot] = null;
     }
-
-    onChange({
-      ...char,
-      inventory: [...inventory, returnedItem],
-      equipped: nextEquipped,
-    });
+    onChange({ ...char, inventory: [...inventory, returnedItem], equipped: nextEquipped });
   }, [char, equipped, inventory, onChange]);
+
+  /* ── skill handlers ── */
+  const handleSkillsetChange = useCallback((next) => {
+    onChange({ ...char, skillset: next });
+  }, [char, onChange]);
+
+  const handleEquippedSkillsChange = useCallback((next) => {
+    onChange({ ...char, equippedSkills: next });
+  }, [char, onChange]);
+
+  const handleSkillCharUpdate = useCallback((fields) => {
+    onChange({ ...char, ...fields });
+  }, [char, onChange]);
+
+  /* ── MP bar percentage ── */
+  const maxMp  = char.maxMp  ?? 10;
+  const mp     = char.mp     ?? maxMp;
+  const mpPct  = maxMp > 0 ? Math.min(100, (mp / maxMp) * 100) : 0;
+  const exhPct = Math.min(100, char.exhaustion ?? 0);
 
   return (
     <>
@@ -109,11 +113,8 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
           <EmojiPicker value={char.emoji} onChange={e => update("emoji", e)} />
           <div className="char-fields">
             <input
-              className="name-input"
-              type="text"
-              placeholder="Character Name"
-              value={char.name}
-              onChange={e => update("name", e.target.value)}
+              className="name-input" type="text" placeholder="Character Name"
+              value={char.name} onChange={e => update("name", e.target.value)}
               style={{ marginBottom: 8 }}
             />
             <div className="field-row">
@@ -135,18 +136,58 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
         <div className="field-row" style={{ marginTop: 12 }}>
           <div className="field-group">
             <div className="label">Gold 🪙</div>
-            <input
-              type="number"
-              min={0}
-              value={char.gold}
-              onChange={e => update("gold", Math.max(0, parseInt(e.target.value) || 0))}
-            />
+            <input type="number" min={0} value={char.gold}
+              onChange={e => update("gold", Math.max(0, parseInt(e.target.value) || 0))} />
           </div>
         </div>
       </div>
 
-      {/* HP & Armor */}
+      {/* HP, MP & Exhaustion */}
       <HpTracker hp={char.hp} maxHp={char.maxHp} armor={char.armor} onUpdate={updateMany} />
+
+      <div className="card">
+        <div className="section-title">Mana &amp; Exhaustion</div>
+
+        {/* MP bar */}
+        <div className="hp-row">
+          <div className="hp-label" style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"var(--text-dim)", letterSpacing:1 }}>MP</div>
+          <div className="hp-bar-wrap">
+            <div className="hp-bar-fill" style={{ width:`${mpPct}%`, background:"linear-gradient(90deg,#4a5cbf,#7b8ff5)" }} />
+          </div>
+          <div className="hp-nums">
+            <input type="number" min={0} max={maxMp} value={mp}
+              onChange={e => update("mp", Math.min(maxMp, Math.max(0, parseInt(e.target.value) || 0)))} />
+            <span className="hp-sep">/</span>
+            <input type="number" min={1} value={maxMp}
+              onChange={e => update("maxMp", Math.max(1, parseInt(e.target.value) || 1))} />
+          </div>
+        </div>
+
+        {/* Exhaustion bar */}
+        <div className="hp-row" style={{ marginBottom: 0 }}>
+          <div className="hp-label" style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"var(--text-dim)", letterSpacing:1 }}>EXH</div>
+          <div className="hp-bar-wrap">
+            <div className="hp-bar-fill" style={{
+              width:`${exhPct}%`,
+              background: exhPct >= 100
+                ? "linear-gradient(90deg,#7a0000,#c00)"
+                : exhPct >= 60
+                  ? "linear-gradient(90deg,#7a4a00,#c97820)"
+                  : "linear-gradient(90deg,#3a5a3a,#5a9a5a)"
+            }} />
+          </div>
+          <div className="hp-nums">
+            <input type="number" min={0} max={100} value={exhPct}
+              onChange={e => update("exhaustion", Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+            <span className="hp-sep" style={{ color:"var(--text-dim)", fontSize:12 }}>%</span>
+          </div>
+        </div>
+        {exhPct >= 100 && (
+          <div style={{ marginTop:8, fontSize:12, color:"var(--red)", fontFamily:"'Cinzel',serif", letterSpacing:1 }}>
+            ⚠ Exhausted — cannot use active skills
+          </div>
+        )}
+      </div>
 
       {/* Ability scores */}
       <div className="card">
@@ -160,6 +201,18 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
 
       {/* Equipment slots */}
       <EquipmentPanel equipped={equipped} onUnequip={handleUnequip} />
+
+      {/* Equipped skills */}
+      <SkillPanel
+        skillset={skillset}
+        equippedSkills={equippedSkills}
+        mp={mp}
+        maxMp={maxMp}
+        exhaustion={exhPct}
+        onSkillsetChange={handleSkillsetChange}
+        onEquippedChange={handleEquippedSkillsChange}
+        onCharUpdate={handleSkillCharUpdate}
+      />
 
       {/* Inventory */}
       <InventoryList

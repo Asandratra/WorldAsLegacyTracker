@@ -23,6 +23,9 @@ export function newCharacter(name = "New Adventurer") {
     xp: 0,
     hp: 10,
     maxHp: 10,
+    mp: 10,
+    maxMp: 10,
+    exhaustion: 0,           // 0–100 percent
     armor: 10,
     gold: 0,
     str: 10, dex: 10, con: 10,
@@ -30,6 +33,8 @@ export function newCharacter(name = "New Adventurer") {
     notes: "",
     inventory: [],
     equipped: newEquipped(),
+    skillset: [],             // all known skills (the "learnt" pool)
+    equippedSkills: [],       // up to 12 skill ids
   };
 }
 

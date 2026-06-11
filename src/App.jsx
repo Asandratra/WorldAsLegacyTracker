@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss } from "./styles/GlobalCSS.js";
+import { globalCss, equipmentCss, skillCss } from "./styles/globalCss.js";
 import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
@@ -9,7 +9,7 @@ import ImportExport from "./components/ImportExport.jsx";
 
 // Inject CSS into <head> once at module load — never touched again
 const styleEl = document.createElement("style");
-styleEl.textContent = globalCss + equipmentCss;
+styleEl.textContent = globalCss + equipmentCss + skillCss;
 document.head.appendChild(styleEl);
 
 // Load once, share between both state initialisers
