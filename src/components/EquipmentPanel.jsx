@@ -1,22 +1,48 @@
 import { memo } from "react";
 import { newEquipped } from "../utils/Character.js";
+import { fmtPower } from "../utils/Inventory.js";
 
 const ARMOR_SLOTS = { head: "Head", upper: "Upper", lower: "Lower" };
 
-function WeaponSubLine({ item }) {
-  if (!item) return null;
-  const parts = [];
-  if (item.slash_power) parts.push(`Slash ${item.slash_power}`);
-  if (item.blunt_power) parts.push(`Blunt ${item.blunt_power}`);
-  if (item.pierce_power) parts.push(`Pierce ${item.pierce_power}`);
-  if (item.block_power) parts.push(`Block ${item.block_power}`);
-  if (!parts.length) return null;
-  return <div className="equip-slot-sub">{parts.join(" · ")}</div>;
+function fmtMods(mods) {
+  if (!mods) return null;
+  return Object.entries(mods)
+    .filter(([, v]) => v !== 0)
+    .map(([k, v]) => `${k.slice(0, 3)} ${v > 0 ? "+" : ""}${v}`)
+    .join(" · ");
 }
 
-function ArmorSubLine({ item }) {
-  if (!item || item.armor <= 0) return null;
-  return <div className="equip-slot-sub">Armor +{item.armor}</div>;
+function WeaponSubLine({ item }) {
+  if (!item) return null;
+  const powers = [
+    ["Slash",  item.slash_power],
+    ["Blunt",  item.blunt_power],
+    ["Pierce", item.pierce_power],
+    ["Block",  item.block_power],
+  ].filter(([, p]) => p?.count > 0)
+   .map(([l, p]) => `${l} ${fmtPower(p)}`);
+
+  const mods = fmtMods(item.stat_modifiers);
+  if (!powers.length && !mods) return null;
+  return (
+    <>
+      {powers.length > 0 && <div className="equip-slot-sub">{powers.join(" · ")}</div>}
+      {mods && <div className="equip-slot-sub mod-line">{mods}</div>}
+    </>
+  );
+}
+
+function EquipSubLine({ item }) {
+  if (!item) return null;
+  const parts = [];
+  if (item.armor > 0) parts.push(`Armor +${item.armor}`);
+  const mods = fmtMods(item.stat_modifiers);
+  return (
+    <>
+      {parts.length > 0 && <div className="equip-slot-sub">{parts.join(" · ")}</div>}
+      {mods && <div className="equip-slot-sub mod-line">{mods}</div>}
+    </>
+  );
 }
 
 const EquipSlot = memo(function EquipSlot({ label, item, tag, onUnequip }) {
@@ -31,15 +57,13 @@ const EquipSlot = memo(function EquipSlot({ label, item, tag, onUnequip }) {
               {tag && <span className="equip-slot-tag">{tag}</span>}
             </div>
             {item.description && <div className="equip-slot-desc">{item.description}</div>}
-            {item.kind === "weapon" ? <WeaponSubLine item={item} /> : <ArmorSubLine item={item} />}
+            {item.kind === "weapon" ? <WeaponSubLine item={item} /> : <EquipSubLine item={item} />}
           </>
         ) : (
           <div className="equip-slot-empty">— empty —</div>
         )}
       </div>
-      {item && (
-        <button className="equip-unequip-btn" onClick={onUnequip}>Remove</button>
-      )}
+      {item && <button className="equip-unequip-btn" onClick={onUnequip}>Remove</button>}
     </div>
   );
 });
@@ -51,33 +75,22 @@ const EquipmentPanel = memo(function EquipmentPanel({ equipped, onUnequip }) {
     accessories: equipped?.accessories ?? [null, null, null],
   };
 
-  // For dual-hand: both slots hold the same item object.
-  // We detect this to show a single "2H" tag and only render one remove button.
   const isDualHeld =
     safe.right_hand !== null &&
-    safe.left_hand !== null &&
+    safe.left_hand  !== null &&
     safe.right_hand.id === safe.left_hand.id;
 
   return (
     <div className="card">
       <div className="section-title">Equipment</div>
       <div className="equip-grid">
-
-        {/* Armor slots */}
         {Object.entries(ARMOR_SLOTS).map(([slot, label]) => (
-          <EquipSlot
-            key={slot}
-            label={label}
-            item={safe[slot]}
-            onUnequip={() => onUnequip(slot)}
-          />
+          <EquipSlot key={slot} label={label} item={safe[slot]} onUnequip={() => onUnequip(slot)} />
         ))}
 
-        {/* Hand slots */}
         <div className="equip-section-label">Weapons</div>
 
         {isDualHeld ? (
-          /* Dual-hand: show as one merged row */
           <div className="equip-slot filled equip-slot-dual">
             <div className="equip-slot-label">Both Hands</div>
             <div className="equip-slot-content">
@@ -85,39 +98,21 @@ const EquipmentPanel = memo(function EquipmentPanel({ equipped, onUnequip }) {
                 {safe.right_hand.name || "Unnamed"}
                 <span className="equip-slot-tag">2H</span>
               </div>
-              {safe.right_hand.description && (
-                <div className="equip-slot-desc">{safe.right_hand.description}</div>
-              )}
+              {safe.right_hand.description && <div className="equip-slot-desc">{safe.right_hand.description}</div>}
               <WeaponSubLine item={safe.right_hand} />
             </div>
-            <button className="equip-unequip-btn" onClick={() => onUnequip("both_hands")}>
-              Remove
-            </button>
+            <button className="equip-unequip-btn" onClick={() => onUnequip("both_hands")}>Remove</button>
           </div>
         ) : (
           <>
-            <EquipSlot
-              label="Right Hand"
-              item={safe.right_hand}
-              onUnequip={() => onUnequip("right_hand")}
-            />
-            <EquipSlot
-              label="Left Hand"
-              item={safe.left_hand}
-              onUnequip={() => onUnequip("left_hand")}
-            />
+            <EquipSlot label="Right Hand" item={safe.right_hand} onUnequip={() => onUnequip("right_hand")} />
+            <EquipSlot label="Left Hand"  item={safe.left_hand}  onUnequip={() => onUnequip("left_hand")}  />
           </>
         )}
 
-        {/* Accessories */}
         <div className="equip-section-label">Accessories</div>
         {safe.accessories.map((item, i) => (
-          <EquipSlot
-            key={`acc-${i}`}
-            label={`Accessory ${i + 1}`}
-            item={item}
-            onUnequip={() => onUnequip("accessory", i)}
-          />
+          <EquipSlot key={`acc-${i}`} label={`Accessory ${i + 1}`} item={item} onUnequip={() => onUnequip("accessory", i)} />
         ))}
       </div>
     </div>

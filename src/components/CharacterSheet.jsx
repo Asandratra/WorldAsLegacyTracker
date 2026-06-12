@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { BASE_STATS, SOCIAL_STATS, newEquipped } from "../utils/Character.js";
+import { sumModifier } from "../utils/Inventory.js";
 import EmojiPicker from "./EmojiPicker.jsx";
 import HpTracker from "./HpTracker.jsx";
 //import StatBox from "./StatBox.jsx";
@@ -14,6 +15,7 @@ import SkillPanel from "./SkillPanel.jsx";
    sync without prop-drilling everything twice.
 ───────────────────────────────────────────── */
 function useCharSheet(char, onChange) {
+
   const update = useCallback(
     (field, val) => onChange({ ...char, [field]: val }),
     [char, onChange]
@@ -28,12 +30,15 @@ function useCharSheet(char, onChange) {
     ...(char.equipped ?? {}),
     accessories: char.equipped?.accessories ?? [null, null, null],
   }), [char.equipped]);
+  
+  const getModifier = (key) => equipped ? sumModifier(equipped, key) : 0;
+  const getTotal = (key, base) => base + getModifier(key);
 
   const inventory      = useMemo(() => Array.isArray(char.inventory)      ? char.inventory      : [], [char.inventory]);
   const skillset       = useMemo(() => Array.isArray(char.skillset)       ? char.skillset       : [], [char.skillset]);
   const equippedSkills = useMemo(() => Array.isArray(char.equippedSkills) ? char.equippedSkills : [], [char.equippedSkills]);
 
-  const maxMp  = char.maxMp ?? 10;
+  const maxMp  = getTotal("mp",char.maxMp) ?? 10;
   const mp     = char.mp    ?? maxMp;
   const mpPct  = maxMp > 0 ? Math.min(100, (mp / maxMp) * 100) : 0;
   const exhPct = Math.min(100, char.exhaustion ?? 0);
@@ -96,7 +101,7 @@ function useCharSheet(char, onChange) {
    STATS SECTION
    Tabbed view: Base Stats and Social Stats
 ───────────────────────────────────────────── */
-function StatsSection({ char, onChange }) {
+function StatsSection({ char, onChange, equipped }) {
   const [statTab, setStatTab] = useState("base");
   const [isEditing, setIsEditing] = useState(false); // Controls modal visibility
 
@@ -115,6 +120,10 @@ function StatsSection({ char, onChange }) {
   const activeKeys = statTab === "base" ? BASE_STATS : SOCIAL_STATS;
   const activeData = statTab === "base" ? baseStats : socialStats;
   const activeCategory = statTab === "base" ? "base_stats" : "social_stats";
+  // Sum stat modifiers from all equipped items for currently viewed stat group
+  const getModifier = (key) => equipped ? sumModifier(equipped, key) : 0;
+  const getTotal = (key, base) => base + getModifier(key);
+  const getDiceBonus = (total) => Math.floor(total / 3);
 
   // Radar math dimensions
   const size = 300;
@@ -185,8 +194,8 @@ function StatsSection({ char, onChange }) {
             ))}
 
             {radarPoints.map((p, i) => (
-              <text key={i} x={p.labelX} y={p.labelY} textAnchor="middle" alignmentBaseline="middle" className="radar-label-text">
-                {p.key.slice(0, 3).toLowerCase()} : {p.val}
+              <text style={{fontSize:10}} key={i} x={p.labelX} y={p.labelY} textAnchor="middle" alignmentBaseline="middle" className="radar-label-text">
+                {p.key.slice(0, 3).toLowerCase()} {getTotal(p.key, p.val)} { getTotal(p.key, p.val)<0 ? "["+getDiceBonus(getTotal(p.key, p.val))+"]" : "[+"+getDiceBonus(getTotal(p.key, p.val))+"]"}
               </text>
             ))}
           </svg>
@@ -212,30 +221,29 @@ function StatsSection({ char, onChange }) {
                 <div className="radar-input-row" key={p.key}>
                   <label className="label">{p.key.charAt(0).toUpperCase() + p.key.slice(1)}</label>
                   <div className="radar-counter-box">
-                    <button 
-                      className="hp-btn" 
-                      onClick={() => updateStat(activeCategory, p.key, Math.max(0, p.val - 1))}
-                    >
-                      -
-                    </button>
+                    <button className="hp-btn" onClick={() => updateStat(activeCategory, p.key, Math.max(0, p.val - 1))}>-</button>
                     <input
-                      type="number"
-                      min={0}
-                      max={30}
+                      type="number" min={0} max={30}
                       value={p.val}
                       onChange={e => updateStat(activeCategory, p.key, Math.max(0, parseInt(e.target.value) || 0))}
                     />
-                    <button 
-                      className="hp-btn" 
-                      onClick={() => updateStat(activeCategory, p.key, p.val + 1)}
-                    >
-                      +
-                    </button>
+                    <button className="hp-btn" onClick={() => updateStat(activeCategory, p.key, p.val + 1)}>+</button>
                   </div>
-                  <span className="stat-modifier">
-                    {Math.floor((p.val - 10) / 2) >= 0 ? "+" : ""}
-                    {Math.floor((p.val - 10) / 2)}
-                  </span>
+                  {(() => {
+                    const mod   = getModifier(p.key);
+                    const total = p.val + mod;
+                    const dice  = getDiceBonus(total);
+                    return (
+                      <div className="stat-detail-col">
+                        <span className="stat-total-display">
+                          {p.val}
+                          {mod !== 0 && <span className={`stat-mod-inline ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
+                          <span className="stat-equals">= {total}</span>
+                        </span>
+                        {dice > 0 && <span className="stat-dice-bonus">+{dice}d bonus</span>}
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
@@ -260,6 +268,9 @@ export function LeftColumn({ char, onChange, onDelete }) {
     equipped, mp, maxMp, mpPct, exhPct,
     handleUnequip,
   } = useCharSheet(char, onChange);
+
+  const getModifier = (key) => equipped ? sumModifier(equipped, key) : 0;
+  const getTotal = (key, base) => base + getModifier(key);
 
   return (
     <>
@@ -294,7 +305,7 @@ export function LeftColumn({ char, onChange, onDelete }) {
       </div>
 
       {/* HP */}
-      <HpTracker hp={char.hp} maxHp={char.maxHp} armor={char.armor} onUpdate={updateMany} />
+      <HpTracker hp={char.hp} maxHp={getTotal("hp", char.maxHp)} armor={getTotal("armor", char.armor)} onUpdate={updateMany} />
 
       {/* MP & Exhaustion */}
       <div className="card">
@@ -338,7 +349,7 @@ export function LeftColumn({ char, onChange, onDelete }) {
       {/* Ability scores */}
       <div className="card">
         <div className="section-title">Ability Scores</div>
-        <StatsSection char={char} onChange={onChange} />
+        <StatsSection char={char} onChange={onChange} equipped={equipped} />
       </div>
 
       {/* Equipment */}

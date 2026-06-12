@@ -801,193 +801,7 @@ export const equipmentCss = `
     transition: all 0.12s;
   }
   .equip-unequip-btn:hover { border-color: var(--red-dim); color: var(--red); }
-  .radar-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .radar-chart-wrapper {
-    width: 100%;
-    max-width: 280px;
-    background: var(--paper-dark);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: inset 0 1px 3px var(--shadow);
-  }
-
-  .radar-svg {
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-
-  .radar-grid-line {
-    fill: none;
-    stroke: var(--border);
-    stroke-width: 1;
-    stroke-dasharray: 3 3;
-  }
-
-  .radar-axis-line {
-    stroke: var(--border);
-    stroke-width: 1;
-    opacity: 0.6;
-  }
-
-  .radar-poly-fill {
-    fill: var(--gold-faint);
-    opacity: 0.35;
-  }
-
-  .radar-poly-stroke {
-    fill: none;
-    stroke: var(--gold-light);
-    stroke-width: 2;
-  }
-
-  .radar-node {
-    fill: var(--red);
-    stroke: var(--paper);
-    stroke-width: 1.5;
-  }
-
-  .radar-label-text {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    fill: var(--ink-mid);
-    font-weight: 600;
-  }
-
-  .radar-inputs-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .radar-input-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 8px;
-    background: var(--paper-dark);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-  }
-
-  .radar-input-row .label {
-    margin-bottom: 0;
-    width: 80px;
-  }
-
-  .radar-counter-box {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .radar-counter-box input {
-    width: 40px;
-    text-align: center;
-    font-family: 'IM Fell English', serif;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 2px;
-    border: none;
-    background: transparent;
-  }
-
-  .radar-counter-box input::-webkit-outer-spin-button,
-  .radar-counter-box input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .radar-input-row .stat-modifier {
-    width: 30px;
-    text-align: right;
-    font-weight: 600;
-  }
-  .stat-edit-trigger {
-    margin-top: 12px;
-    padding: 6px 16px;
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .stat-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(18, 11, 5, 0.6); /* Tinted with your deep ink tone */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    backdrop-filter: blur(2px);
-  }
-
-  .stat-modal-content {
-    background: var(--paper);
-    border: 3px double var(--gold);
-    border-radius: 4px;
-    width: 90%;
-    max-width: 360px;
-    padding: 20px;
-    box-shadow: 0 8px 24px var(--shadow);
-    animation: modalFadeIn 0.2s ease-out;
-  }
-
-  @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .stat-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    border-bottom: 1px dashed var(--border-dark);
-    padding-bottom: 8px;
-  }
-
-  .stat-modal-header h3 {
-    font-family: 'Cinzel', serif;
-    color: var(--red);
-    margin: 0;
-    font-size: 18px;
-  }
-
-  .stat-modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: var(--ink-dim);
-    cursor: pointer;
-    line-height: 1;
-  }
-
-  .stat-modal-close:hover {
-    color: var(--red);
-  }
-
-  .stat-modal-footer {
-    margin-top: 18px;
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .stat-modal-footer .btn {
-    font-family: 'Cinzel', serif;
-    min-width: 80px;
-  }`;
+`;
 
 export const skillCss = `
   /* ── Skill grid 6×2 (desktop right column) ── */
@@ -1256,5 +1070,208 @@ export const skillCss = `
     width: 15px; height: 15px;
     accent-color: var(--gold);
     cursor: pointer;
+  }
+`;
+
+export const powerModCss = `
+  /* ── DiceInput ── */
+  .dice-input-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .dice-input-count {
+    width: 38px !important;
+    text-align: center;
+    padding: 4px 4px !important;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+  }
+  .dice-input-faces {
+    width: 38px !important;
+    text-align: center;
+    padding: 4px 4px !important;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+  }
+  .dice-input-sep {
+    font-family: 'IM Fell English', serif;
+    font-size: 14px;
+    color: var(--ink-dim);
+    user-select: none;
+  }
+
+  /* ── Power fields grid in AddItemModal ── */
+  .power-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .power-field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .power-field-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+
+  /* ── StatModifierEditor ── */
+  .stat-mod-editor {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .stat-mod-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--paper-dark);
+    border: none;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    transition: background 0.12s;
+  }
+  .stat-mod-toggle:hover { background: var(--paper-deep); color: var(--ink); }
+  .stat-mod-count {
+    margin-left: auto;
+    font-size: 9px;
+    color: var(--gold);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 1px 5px;
+  }
+  .stat-mod-chevron { font-size: 9px; color: var(--ink-faint); }
+  .stat-mod-body {
+    padding: 10px 12px;
+    background: var(--paper);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .stat-mod-body::-webkit-scrollbar { width: 3px; }
+  .stat-mod-body::-webkit-scrollbar-thumb { background: var(--border); }
+  .stat-mod-group-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .stat-mod-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .stat-mod-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 6px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .stat-mod-key {
+    font-size: 11px;
+    color: var(--ink-mid);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: italic;
+  }
+  .stat-mod-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .stat-mod-btn {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border);
+    background: var(--paper);
+    color: var(--ink-dim);
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: monospace;
+    transition: all 0.1s;
+    line-height: 1;
+  }
+  .stat-mod-btn:hover { border-color: var(--border-dark); color: var(--ink); }
+  .stat-mod-input {
+    width: 34px !important;
+    text-align: center;
+    padding: 2px 2px !important;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    border-radius: 2px;
+  }
+  .stat-mod-input.positive { color: var(--green-light); border-color: var(--green); }
+  .stat-mod-input.negative { color: var(--red);         border-color: var(--red-dim); }
+
+  /* ── Mod line in equip/inventory sublines ── */
+  .equip-slot-sub.mod-line { color: var(--blue-light); font-style: italic; }
+  .inv-sub.mod-line { color: var(--blue-light); font-style: italic; }
+
+  /* ── Stat detail column in edit modal ── */
+  .stat-detail-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 72px;
+  }
+  .stat-total-display {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .stat-mod-inline {
+    font-size: 11px;
+    font-family: 'Cinzel', serif;
+  }
+  .stat-mod-inline.pos { color: var(--green-light); }
+  .stat-mod-inline.neg { color: var(--red); }
+  .stat-equals {
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .stat-dice-bonus {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 1px 4px;
+    background: rgba(138,100,32,0.06);
+    letter-spacing: 0.5px;
   }
 `;

@@ -27,8 +27,8 @@ export function newCharacter(name = "New Adventurer") {
     maxHp: 10,
     mp: 10,
     maxMp: 10,
-    exhaustion: 0,           // 0–100 percent
-    armor: 10,
+    exhaustion: 0,
+    armor: 0,
     gold: 0,
     base_stats: {
       strength: 10,

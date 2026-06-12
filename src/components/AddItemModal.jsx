@@ -1,20 +1,25 @@
 import { useState } from "react";
 import {
   ITEM_TYPES, EQUIPMENT_SLOTS, WEAPON_HAND_TYPES,
-  createBlankEntry
+  createBlankEntry, newPower,
 } from "../utils/Inventory.js";
+import DiceInput from "./DiceInput.jsx";
+import StatModifierEditor from "./StatModifierEditor.jsx";
 
 const KIND_LABELS = { item: "Item", equipment: "Equipment", weapon: "Weapon" };
+
+const POWER_FIELDS = [
+  { key: "slash_power",  label: "Slash" },
+  { key: "blunt_power",  label: "Blunt" },
+  { key: "pierce_power", label: "Pierce" },
+  { key: "block_power",  label: "Block" },
+];
 
 export default function AddItemModal({ onAdd, onClose }) {
   const [kind, setKind] = useState("item");
   const [form, setForm] = useState(createBlankEntry("item"));
 
-  const switchKind = (k) => {
-    setKind(k);
-    setForm(createBlankEntry(k));
-  };
-
+  const switchKind = (k) => { setKind(k); setForm(createBlankEntry(k)); };
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }));
 
   const handleAdd = () => {
@@ -31,55 +36,60 @@ export default function AddItemModal({ onAdd, onClose }) {
         {/* Kind tabs */}
         <div className="modal-kind-tabs">
           {ITEM_TYPES.map(k => (
-            <button
-              key={k}
-              className={`modal-kind-tab ${kind === k ? "active" : ""}`}
-              onClick={() => switchKind(k)}
-            >
+            <button key={k} className={`modal-kind-tab ${kind === k ? "active" : ""}`} onClick={() => switchKind(k)}>
               {KIND_LABELS[k]}
             </button>
           ))}
         </div>
 
-        {/* Shared: Name */}
+        {/* Name */}
         <div className="modal-field">
           <div className="label">Name</div>
           <input type="text" placeholder="Iron Sword…" value={form.name} onChange={e => set("name", e.target.value)} />
         </div>
 
-        {/* Shared: Description */}
+        {/* Description */}
         <div className="modal-field">
-          <div className="label">Description</div>
-          <input type="text" placeholder={kind === "equipment" ? "+2 STR while equipped…" : "A rusty blade…"} value={form.description} onChange={e => set("description", e.target.value)} />
+          <div className="label">{kind === "equipment" ? "Effect / Notes" : "Description"}</div>
+          <input type="text" placeholder={kind === "equipment" ? "+2 STR while equipped…" : "A rusty blade…"}
+            value={form.description} onChange={e => set("description", e.target.value)} />
         </div>
 
-        {/* Item-specific */}
+        {/* Item */}
         {kind === "item" && (
           <div className="modal-field">
             <div className="label">Quantity</div>
-            <input type="number" min={1} value={form.quantity} onChange={e => set("quantity", Math.max(1, parseInt(e.target.value) || 1))} />
+            <input type="number" min={1} value={form.quantity}
+              onChange={e => set("quantity", Math.max(1, parseInt(e.target.value) || 1))} />
           </div>
         )}
 
-        {/* Equipment-specific */}
+        {/* Equipment */}
         {kind === "equipment" && (
-          <div className="modal-row">
-            <div className="modal-field">
-              <div className="label">Armor Bonus</div>
-              <input type="number" min={0} value={form.armor} onChange={e => set("armor", parseInt(e.target.value) || 0)} />
+          <>
+            <div className="modal-row">
+              <div className="modal-field">
+                <div className="label">Armor Bonus</div>
+                <input type="number" min={0} value={form.armor}
+                  onChange={e => set("armor", parseInt(e.target.value) || 0)} />
+              </div>
+              <div className="modal-field">
+                <div className="label">Slot</div>
+                <select value={form.slot} onChange={e => set("slot", e.target.value)}>
+                  {EQUIPMENT_SLOTS.map(s => (
+                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="modal-field">
-              <div className="label">Slot</div>
-              <select value={form.slot} onChange={e => set("slot", e.target.value)}>
-                {EQUIPMENT_SLOTS.map(s => (
-                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+            <StatModifierEditor
+              modifiers={form.stat_modifiers ?? {}}
+              onChange={m => set("stat_modifiers", m)}
+            />
+          </>
         )}
 
-        {/* Weapon-specific */}
+        {/* Weapon */}
         {kind === "weapon" && (
           <>
             <div className="modal-field">
@@ -90,44 +100,27 @@ export default function AddItemModal({ onAdd, onClose }) {
                 ))}
               </select>
             </div>
-            <div className="modal-row">
-              <div className="modal-field">
-                <div className="label">Slash</div>
-                <input
-                  type="text"
-                  placeholder="e.g., 2d6, 1d8+2"
-                  value={form.slash_power}
-                  onChange={e => set("slash_power", e.target.value)}
-                />
-              </div>
-              <div className="modal-field">
-                <div className="label">Blunt</div>
-                <input
-                  type="text"
-                  placeholder="e.g., 2d6, 1d8+2"
-                  value={form.blunt_power}
-                  onChange={e => set("blunt_power", e.target.value)}
-                />
-              </div>
-              <div className="modal-field">
-                <div className="label">Pierce</div>
-                <input
-                  type="text"
-                  placeholder="e.g., 2d6, 1d8+2"
-                  value={form.pierce_power}
-                  onChange={e => set("pierce_power", e.target.value)}
-                />
-              </div>
-              <div className="modal-field">
-                <div className="label">Block</div>
-                <input
-                  type="text"
-                  placeholder="e.g., 1d6, 2+1d4"
-                  value={form.block_power}
-                  onChange={e => set("block_power", e.target.value)}
-                />
+
+            {/* Power fields — each is a DiceInput */}
+            <div className="modal-field">
+              <div className="label" style={{ marginBottom: 8 }}>Powers</div>
+              <div className="power-fields-grid">
+                {POWER_FIELDS.map(({ key, label }) => (
+                  <div key={key} className="power-field-row">
+                    <span className="power-field-label">{label}</span>
+                    <DiceInput
+                      value={form[key] ?? newPower()}
+                      onChange={v => set(key, v)}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
+
+            <StatModifierEditor
+              modifiers={form.stat_modifiers ?? {}}
+              onChange={m => set("stat_modifiers", m)}
+            />
           </>
         )}
 
