@@ -1,23 +1,25 @@
-import { useCallback, useMemo } from "react";
-import { ABILITY_STATS, newEquipped } from "../utils/Character.js";
+import { useCallback, useMemo, useState } from "react";
+import { BASE_STATS, SOCIAL_STATS, newEquipped } from "../utils/Character.js";
 import EmojiPicker from "./EmojiPicker.jsx";
 import HpTracker from "./HpTracker.jsx";
-import StatBox from "./StatBox.jsx";
+//import StatBox from "./StatBox.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
 import SkillPanel from "./SkillPanel.jsx";
 
-export default function CharacterSheet({ char, onChange, onDelete }) {
+/* ─────────────────────────────────────────────
+   Shared hook — derives all state & handlers
+   from a char + onChange pair. Used by both
+   LeftColumn and RightColumn so they stay in
+   sync without prop-drilling everything twice.
+───────────────────────────────────────────── */
+function useCharSheet(char, onChange) {
   const update = useCallback(
     (field, val) => onChange({ ...char, [field]: val }),
     [char, onChange]
   );
   const updateMany = useCallback(
     (fields) => onChange({ ...char, ...fields }),
-    [char, onChange]
-  );
-  const updateInventory = useCallback(
-    (inv) => onChange({ ...char, inventory: inv }),
     [char, onChange]
   );
 
@@ -27,87 +29,241 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
     accessories: char.equipped?.accessories ?? [null, null, null],
   }), [char.equipped]);
 
-  const inventory = useMemo(
-    () => Array.isArray(char.inventory) ? char.inventory : [],
-    [char.inventory]
-  );
-  const skillset = useMemo(
-    () => Array.isArray(char.skillset) ? char.skillset : [],
-    [char.skillset]
-  );
-  const equippedSkills = useMemo(
-    () => Array.isArray(char.equippedSkills) ? char.equippedSkills : [],
-    [char.equippedSkills]
-  );
+  const inventory      = useMemo(() => Array.isArray(char.inventory)      ? char.inventory      : [], [char.inventory]);
+  const skillset       = useMemo(() => Array.isArray(char.skillset)       ? char.skillset       : [], [char.skillset]);
+  const equippedSkills = useMemo(() => Array.isArray(char.equippedSkills) ? char.equippedSkills : [], [char.equippedSkills]);
 
-  /* ── equipment handlers ── */
-  const handleEquip = useCallback((item, hand) => {
-    const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
-    if (item.kind === "weapon") {
-      if (hand === "both") {
-        if (nextEquipped.right_hand !== null || nextEquipped.left_hand !== null) return;
-        nextEquipped.right_hand = item;
-        nextEquipped.left_hand  = item;
-      } else {
-        if (nextEquipped[hand] !== null) return;
-        nextEquipped[hand] = item;
-      }
-    } else if (item.kind === "equipment") {
-      const slot = item.slot;
-      if (slot === "accessory") {
-        const idx = nextEquipped.accessories.findIndex(a => a === null);
-        if (idx === -1) return;
-        nextEquipped.accessories[idx] = item;
-      } else {
-        if (nextEquipped[slot] !== null) return;
-        nextEquipped[slot] = item;
-      }
-    }
-    onChange({ ...char, inventory: inventory.filter(e => e.id !== item.id), equipped: nextEquipped });
-  }, [char, equipped, inventory, onChange]);
-
-  const handleUnequip = useCallback((slot, accessoryIndex) => {
-    const nextEquipped = { ...equipped, accessories: [...equipped.accessories] };
-    let returnedItem;
-    if (slot === "accessory") {
-      returnedItem = nextEquipped.accessories[accessoryIndex];
-      if (!returnedItem) return;
-      nextEquipped.accessories[accessoryIndex] = null;
-    } else if (slot === "both_hands") {
-      returnedItem = nextEquipped.right_hand;
-      if (!returnedItem) return;
-      nextEquipped.right_hand = null;
-      nextEquipped.left_hand  = null;
-    } else {
-      returnedItem = nextEquipped[slot];
-      if (!returnedItem) return;
-      nextEquipped[slot] = null;
-    }
-    onChange({ ...char, inventory: [...inventory, returnedItem], equipped: nextEquipped });
-  }, [char, equipped, inventory, onChange]);
-
-  /* ── skill handlers ── */
-  const handleSkillsetChange = useCallback((next) => {
-    onChange({ ...char, skillset: next });
-  }, [char, onChange]);
-
-  const handleEquippedSkillsChange = useCallback((next) => {
-    onChange({ ...char, equippedSkills: next });
-  }, [char, onChange]);
-
-  const handleSkillCharUpdate = useCallback((fields) => {
-    onChange({ ...char, ...fields });
-  }, [char, onChange]);
-
-  /* ── MP bar percentage ── */
-  const maxMp  = char.maxMp  ?? 10;
-  const mp     = char.mp     ?? maxMp;
+  const maxMp  = char.maxMp ?? 10;
+  const mp     = char.mp    ?? maxMp;
   const mpPct  = maxMp > 0 ? Math.min(100, (mp / maxMp) * 100) : 0;
   const exhPct = Math.min(100, char.exhaustion ?? 0);
 
+  /* equipment */
+  const handleEquip = useCallback((item, hand) => {
+    const next = { ...equipped, accessories: [...equipped.accessories] };
+    if (item.kind === "weapon") {
+      if (hand === "both") {
+        if (next.right_hand || next.left_hand) return;
+        next.right_hand = next.left_hand = item;
+      } else {
+        if (next[hand]) return;
+        next[hand] = item;
+      }
+    } else if (item.kind === "equipment") {
+      if (item.slot === "accessory") {
+        const idx = next.accessories.findIndex(a => a === null);
+        if (idx === -1) return;
+        next.accessories[idx] = item;
+      } else {
+        if (next[item.slot]) return;
+        next[item.slot] = item;
+      }
+    }
+    onChange({ ...char, inventory: inventory.filter(e => e.id !== item.id), equipped: next });
+  }, [char, equipped, inventory, onChange]);
+
+  const handleUnequip = useCallback((slot, accIdx) => {
+    const next = { ...equipped, accessories: [...equipped.accessories] };
+    let returned;
+    if (slot === "accessory") {
+      returned = next.accessories[accIdx]; if (!returned) return;
+      next.accessories[accIdx] = null;
+    } else if (slot === "both_hands") {
+      returned = next.right_hand; if (!returned) return;
+      next.right_hand = next.left_hand = null;
+    } else {
+      returned = next[slot]; if (!returned) return;
+      next[slot] = null;
+    }
+    onChange({ ...char, inventory: [...inventory, returned], equipped: next });
+  }, [char, equipped, inventory, onChange]);
+
+  /* skills */
+  const handleSkillsetChange    = useCallback((s) => onChange({ ...char, skillset: s }),       [char, onChange]);
+  const handleEquippedSkillChange = useCallback((s) => onChange({ ...char, equippedSkills: s }), [char, onChange]);
+  const handleSkillCharUpdate   = useCallback((f) => onChange({ ...char, ...f }),               [char, onChange]);
+
+  return {
+    update, updateMany,
+    equipped, inventory, skillset, equippedSkills,
+    mp, maxMp, mpPct, exhPct,
+    handleEquip, handleUnequip,
+    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate,
+  };
+}
+
+/* ─────────────────────────────────────────────
+   STATS SECTION
+   Tabbed view: Base Stats and Social Stats
+───────────────────────────────────────────── */
+function StatsSection({ char, onChange }) {
+  const [statTab, setStatTab] = useState("base");
+  const [isEditing, setIsEditing] = useState(false); // Controls modal visibility
+
+  const updateStat = useCallback(
+    (category, statName, val) => {
+      const stats = { ...char[category] };
+      stats[statName] = val;
+      onChange({ ...char, [category]: stats });
+    },
+    [char, onChange]
+  );
+
+  const baseStats = useMemo(() => char.base_stats ?? {}, [char.base_stats]);
+  const socialStats = useMemo(() => char.social_stats ?? {}, [char.social_stats]);
+
+  const activeKeys = statTab === "base" ? BASE_STATS : SOCIAL_STATS;
+  const activeData = statTab === "base" ? baseStats : socialStats;
+  const activeCategory = statTab === "base" ? "base_stats" : "social_stats";
+
+  // Radar math dimensions
+  const size = 300;
+  const center = size / 2;
+  const radius = 100; 
+  const maxStatValue = 20; 
+
+  const radarPoints = useMemo(() => {
+    const totalSides = activeKeys.length;
+    return activeKeys.map((key, i) => {
+      const val = activeData[key] ?? 10;
+      const angle = (Math.PI * 2 / totalSides) * i - Math.PI / 2;
+      
+      const calculatedRadius = (Math.min(val, maxStatValue) / maxStatValue) * radius;
+      const x = center + calculatedRadius * Math.cos(angle);
+      const y = center + calculatedRadius * Math.sin(angle);
+
+      const labelX = center + (radius + 22) * Math.cos(angle);
+      const labelY = center + (radius + 12) * Math.sin(angle);
+
+      return { key, val, x, y, labelX, labelY, angle };
+    });
+  }, [activeKeys, activeData, center, radius]);
+
+  const polygonPointsStr = radarPoints.map(p => `${p.x},${p.y}`).join(" ");
+  const concentricGridLevels = [0.25, 0.5, 0.75, 1];
+
   return (
     <>
-      {/* Identity */}
+      <div className="modal-kind-tabs" style={{ marginBottom: 16 }}>
+        <button
+          className={`modal-kind-tab ${statTab === "base" ? "active" : ""}`}
+          onClick={() => setStatTab("base")}
+        >
+          Base
+        </button>
+        <button
+          className={`modal-kind-tab ${statTab === "social" ? "active" : ""}`}
+          onClick={() => setStatTab("social")}
+        >
+          Social
+        </button>
+      </div>
+
+      <div className="radar-container">
+        {/* Radar Map Frame */}
+        <div className="radar-chart-wrapper">
+          <svg viewBox={`0 0 ${size} ${size}`} className="radar-svg">
+            {concentricGridLevels.map((lvl, index) => {
+              const gridPoints = activeKeys.map((_, i) => {
+                const angle = (Math.PI * 2 / activeKeys.length) * i - Math.PI / 2;
+                return `${center + (radius * lvl) * Math.cos(angle)},${center + (radius * lvl) * Math.sin(angle)}`;
+              }).join(" ");
+              return <polygon key={index} points={gridPoints} className="radar-grid-line" />;
+            })}
+
+            {radarPoints.map((p, i) => {
+              const edgeX = center + radius * Math.cos(p.angle);
+              const edgeY = center + radius * Math.sin(p.angle);
+              return <line key={i} x1={center} y1={center} x2={edgeX} y2={edgeY} className="radar-axis-line" />;
+            })}
+
+            <polygon points={polygonPointsStr} className="radar-poly-fill" />
+            <polygon points={polygonPointsStr} className="radar-poly-stroke" />
+
+            {radarPoints.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r="4" className="radar-node" />
+            ))}
+
+            {radarPoints.map((p, i) => (
+              <text key={i} x={p.labelX} y={p.labelY} textAnchor="middle" alignmentBaseline="middle" className="radar-label-text">
+                {p.key.slice(0, 3).toLowerCase()} : {p.val}
+              </text>
+            ))}
+          </svg>
+        </div>
+
+        {/* Edit triggering button */}
+        <button className="btn primary-btn stat-edit-trigger" onClick={() => setIsEditing(true)}>
+          Edit Attributes
+        </button>
+      </div>
+
+      {/* STAT EDITING MODAL OVERLAY */}
+      {isEditing && (
+        <div className="stat-modal-overlay" onClick={() => setIsEditing(false)}>
+          <div className="stat-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="stat-modal-header">
+              <h3>Edit {statTab === "base" ? "Base" : "Social"} Attributes</h3>
+              <button className="stat-modal-close" onClick={() => setIsEditing(false)}>×</button>
+            </div>
+            
+            <div className="radar-inputs-list">
+              {radarPoints.map(p => (
+                <div className="radar-input-row" key={p.key}>
+                  <label className="label">{p.key.charAt(0).toUpperCase() + p.key.slice(1)}</label>
+                  <div className="radar-counter-box">
+                    <button 
+                      className="hp-btn" 
+                      onClick={() => updateStat(activeCategory, p.key, Math.max(0, p.val - 1))}
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={30}
+                      value={p.val}
+                      onChange={e => updateStat(activeCategory, p.key, Math.max(0, parseInt(e.target.value) || 0))}
+                    />
+                    <button 
+                      className="hp-btn" 
+                      onClick={() => updateStat(activeCategory, p.key, p.val + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="stat-modifier">
+                    {Math.floor((p.val - 10) / 2) >= 0 ? "+" : ""}
+                    {Math.floor((p.val - 10) / 2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="stat-modal-footer">
+              <button className="btn" onClick={() => setIsEditing(false)}>Done</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   LEFT COLUMN
+   Identity · Gold · HP/MP/Exhaustion · Stats · Equipment · Notes · Delete
+───────────────────────────────────────────── */
+export function LeftColumn({ char, onChange, onDelete }) {
+  const {
+    update, updateMany,
+    equipped, mp, maxMp, mpPct, exhPct,
+    handleUnequip,
+  } = useCharSheet(char, onChange);
+
+  return (
+    <>
+      {/* Identity card */}
       <div className="card">
         <div className="char-header">
           <EmojiPicker value={char.emoji} onChange={e => update("emoji", e)} />
@@ -115,9 +271,8 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
             <input
               className="name-input" type="text" placeholder="Character Name"
               value={char.name} onChange={e => update("name", e.target.value)}
-              style={{ marginBottom: 8 }}
             />
-            <div className="field-row">
+            <div className="field-row" style={{ marginTop: 8 }}>
               <div className="field-group">
                 <div className="label">Class</div>
                 <input type="text" placeholder="Rogue…" value={char.class} onChange={e => update("class", e.target.value)} />
@@ -133,26 +288,22 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
 
       {/* Gold */}
       <div className="card">
-        <div className="field-row" style={{ marginTop: 12 }}>
-          <div className="field-group">
-            <div className="label">Gold 🪙</div>
-            <input type="number" min={0} value={char.gold}
-              onChange={e => update("gold", Math.max(0, parseInt(e.target.value) || 0))} />
-          </div>
-        </div>
+        <div className="label" style={{ marginBottom: 4 }}>Riah 🪙</div>
+        <input type="number" min={0} value={char.gold}
+          onChange={e => update("gold", Math.max(0, parseInt(e.target.value) || 0))} />
       </div>
 
-      {/* HP, MP & Exhaustion */}
+      {/* HP */}
       <HpTracker hp={char.hp} maxHp={char.maxHp} armor={char.armor} onUpdate={updateMany} />
 
+      {/* MP & Exhaustion */}
       <div className="card">
         <div className="section-title">Mana &amp; Exhaustion</div>
 
-        {/* MP bar */}
-        <div className="hp-row">
-          <div className="hp-label" style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"var(--text-dim)", letterSpacing:1 }}>MP</div>
+        <div className="vitals-bar-row">
+          <div className="vitals-bar-label">MP</div>
           <div className="hp-bar-wrap">
-            <div className="hp-bar-fill" style={{ width:`${mpPct}%`, background:"linear-gradient(90deg,#4a5cbf,#7b8ff5)" }} />
+            <div className="hp-bar-fill" style={{ width: `${mpPct}%`, background: "linear-gradient(90deg,#3a4a8a,#6878c8)" }} />
           </div>
           <div className="hp-nums">
             <input type="number" min={0} max={maxMp} value={mp}
@@ -163,46 +314,72 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
           </div>
         </div>
 
-        {/* Exhaustion bar */}
-        <div className="hp-row" style={{ marginBottom: 0 }}>
-          <div className="hp-label" style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"var(--text-dim)", letterSpacing:1 }}>EXH</div>
+        <div className="vitals-bar-row" style={{ marginBottom: 0 }}>
+          <div className="vitals-bar-label">EXH</div>
           <div className="hp-bar-wrap">
             <div className="hp-bar-fill" style={{
-              width:`${exhPct}%`,
-              background: exhPct >= 100
-                ? "linear-gradient(90deg,#7a0000,#c00)"
-                : exhPct >= 60
-                  ? "linear-gradient(90deg,#7a4a00,#c97820)"
-                  : "linear-gradient(90deg,#3a5a3a,#5a9a5a)"
+              width: `${exhPct}%`,
+              background: exhPct >= 100 ? "linear-gradient(90deg,#6a0000,#aa2020)"
+                : exhPct >= 60          ? "linear-gradient(90deg,#6a3a00,#b06a10)"
+                :                         "linear-gradient(90deg,#2a4a28,#4a7a48)"
             }} />
           </div>
           <div className="hp-nums">
             <input type="number" min={0} max={100} value={exhPct}
               onChange={e => update("exhaustion", Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
-            <span className="hp-sep" style={{ color:"var(--text-dim)", fontSize:12 }}>%</span>
+            <span className="hp-sep" style={{ fontSize: 12 }}>%</span>
           </div>
         </div>
         {exhPct >= 100 && (
-          <div style={{ marginTop:8, fontSize:12, color:"var(--red)", fontFamily:"'Cinzel',serif", letterSpacing:1 }}>
-            ⚠ Exhausted — cannot use active skills
-          </div>
+          <div className="exhausted-warning">⚠ Exhausted — active skills disabled</div>
         )}
       </div>
 
       {/* Ability scores */}
       <div className="card">
         <div className="section-title">Ability Scores</div>
-        <div className="stats-grid">
-          {ABILITY_STATS.map(stat => (
-            <StatBox key={stat} label={stat.toUpperCase()} value={char[stat]} onChange={v => update(stat, v)} />
-          ))}
-        </div>
+        <StatsSection char={char} onChange={onChange} />
       </div>
 
-      {/* Equipment slots */}
+      {/* Equipment */}
       <EquipmentPanel equipped={equipped} onUnequip={handleUnequip} />
 
-      {/* Equipped skills */}
+      {/* Notes */}
+      <div className="card">
+        <div className="section-title">Notes</div>
+        <textarea placeholder="Conditions, quest notes, backstory…"
+          value={char.notes} onChange={e => update("notes", e.target.value)}
+          style={{ minHeight: 80 }} />
+      </div>
+
+      <div className="btn-row">
+        <button className="btn danger" onClick={onDelete}>Remove Character</button>
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   RIGHT COLUMN
+   Skills (6×2 grid) · Inventory (scrollable)
+───────────────────────────────────────────── */
+export function RightColumn({ char, onChange }) {
+  const {
+    equipped, inventory,
+    skillset, equippedSkills,
+    mp, maxMp, exhPct,
+    handleEquip,
+    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate,
+  } = useCharSheet(char, onChange);
+
+  const updateInventory = useCallback(
+    (inv) => onChange({ ...char, inventory: inv }),
+    [char, onChange]
+  );
+
+  return (
+    <>
+      {/* Skills — 6×2 grid */}
       <SkillPanel
         skillset={skillset}
         equippedSkills={equippedSkills}
@@ -210,31 +387,18 @@ export default function CharacterSheet({ char, onChange, onDelete }) {
         maxMp={maxMp}
         exhaustion={exhPct}
         onSkillsetChange={handleSkillsetChange}
-        onEquippedChange={handleEquippedSkillsChange}
+        onEquippedChange={handleEquippedSkillChange}
         onCharUpdate={handleSkillCharUpdate}
       />
 
-      {/* Inventory */}
-      <InventoryList
-        inventory={inventory}
-        equipped={equipped}
-        onChange={updateInventory}
-        onEquip={handleEquip}
-      />
-
-      {/* Notes */}
-      <div className="card">
-        <div className="section-title">Notes</div>
-        <textarea
-          placeholder="Conditions, quest notes, backstory…"
-          value={char.notes}
-          onChange={e => update("notes", e.target.value)}
-          style={{ minHeight: 70 }}
+      {/* Inventory — scrollable card */}
+      <div className="inventory-scroll-card">
+        <InventoryList
+          inventory={inventory}
+          equipped={equipped}
+          onChange={updateInventory}
+          onEquip={handleEquip}
         />
-      </div>
-
-      <div className="btn-row">
-        <button className="btn danger" onClick={onDelete}>Remove Character</button>
       </div>
     </>
   );

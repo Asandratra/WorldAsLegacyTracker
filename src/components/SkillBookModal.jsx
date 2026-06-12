@@ -22,7 +22,7 @@ function SkillMeta({ skill }) {
           {primary && <span className="skill-meta-primary">{primary} /</span>} {skill.type}
         </div>
       )}
-      {skill.base_power != null && (
+      {skill.base_power && (
         <div className="skill-meta-tag power">PWR {skill.base_power}</div>
       )}
     </div>

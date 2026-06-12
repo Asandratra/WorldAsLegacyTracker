@@ -1,10 +1,59 @@
 import { useState, memo, useCallback } from "react";
 import { skillBadge, getPrimaryType } from "../utils/Skill.js";
-import SkillbookModal from "./SkillBookModal.jsx";
+import SkillbookModal from "./SkillbookModal.jsx";
 
-const EquippedSkillRow = memo(function EquippedSkillRow({ skill, mp, maxMp, exhaustion, onUse }) {
+const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, onUse }) {
   const canUse = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
-  const badge = skillBadge(skill);
+  const badge  = skillBadge(skill);
+  const primary = skill.type ? getPrimaryType(skill.type) : null;
+
+  return (
+    <div className={`skill-cell ${skill.is_passive ? "passive" : "active"} ${canUse || skill.is_passive ? "" : "depleted"}`}>
+      <div className="skill-cell-top">
+        <div className={`skill-badge sm ${skill.is_passive ? "passive" : "active"}`}>{badge}</div>
+        <div className="skill-cell-name">{skill.name || "Unnamed"}</div>
+        {skill.skill_mastery > 0 && (
+          <span className="skill-mastery-badge">×{skill.skill_mastery}</span>
+        )}
+      </div>
+
+      <div className="skill-cell-meta">
+        {primary && skill.type && (
+          <span className="skill-type-pill">{skill.type}</span>
+        )}
+        {!skill.is_passive && (
+          <>
+            {skill.mp_cost > 0    && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
+            {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}%</span>}
+          </>
+        )}
+      </div>
+
+      {!skill.is_passive && (
+        <button
+          className="skill-use-btn full"
+          onClick={onUse}
+          disabled={!canUse}
+          title={
+            exhaustion + skill.exhaustion_cost > 100 ? "Would exceed 100% exhaustion" :
+            mp < skill.mp_cost ? `Not enough MP (need ${skill.mp_cost})` :
+            `Use: −${skill.mp_cost} MP, +${skill.exhaustion_cost}% exhaustion`
+          }
+        >
+          Use
+        </button>
+      )}
+      {skill.is_passive && (
+        <div className="skill-passive-indicator">Passive</div>
+      )}
+    </div>
+  );
+});
+
+/* Fallback list row used on mobile where grid is collapsed */
+const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse }) {
+  const canUse = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
+  const badge  = skillBadge(skill);
   const primary = skill.type ? getPrimaryType(skill.type) : null;
 
   return (
@@ -19,55 +68,45 @@ const EquippedSkillRow = memo(function EquippedSkillRow({ skill, mp, maxMp, exha
           {primary && skill.type && <span className="skill-type-pill">{primary} · {skill.type}</span>}
           {!skill.is_passive && (
             <>
-              {skill.mp_cost > 0 && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
+              {skill.mp_cost > 0         && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
               {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}%</span>}
             </>
           )}
         </div>
       </div>
       {!skill.is_passive && (
-        <button
-          className="skill-use-btn"
-          onClick={onUse}
-          disabled={!canUse}
-          title={
-            exhaustion + skill.exhaustion_cost > 100 ? "Would exceed 100% exhaustion" :
-            mp < skill.mp_cost ? `Not enough MP (need ${skill.mp_cost})` :
-            `Use: −${skill.mp_cost} MP, +${skill.exhaustion_cost}% exhaustion`
-          }
-        >
-          Use
-        </button>
+        <button className="skill-use-btn" onClick={onUse} disabled={!canUse}>Use</button>
       )}
     </div>
   );
 });
 
 export default function SkillPanel({
-  skillset, equippedSkills, mp, maxMp, exhaustion,
+  skillset, equippedSkills, mp, exhaustion,
   onSkillsetChange, onEquippedChange, onCharUpdate,
 }) {
   const [bookOpen, setBookOpen] = useState(false);
 
-  const equippedSkillObjects = equippedSkills
+  const equippedObjs = equippedSkills
     .map(id => skillset.find(s => s.id === id))
     .filter(Boolean);
 
   const handleUse = useCallback((skill) => {
-    const newMp = Math.max(0, mp - skill.mp_cost);
-    const newExhaustion = Math.min(100, exhaustion + skill.exhaustion_cost);
-    const newSkillset = skillset.map(s =>
+    onCharUpdate({
+      mp:         Math.max(0, mp - skill.mp_cost),
+      exhaustion: Math.min(100, exhaustion + skill.exhaustion_cost),
+    });
+    onSkillsetChange(skillset.map(s =>
       s.id === skill.id ? { ...s, skill_mastery: (s.skill_mastery ?? 0) + 1 } : s
-    );
-    onCharUpdate({ mp: newMp, exhaustion: newExhaustion });
-    onSkillsetChange(newSkillset);
+    ));
   }, [mp, exhaustion, skillset, onCharUpdate, onSkillsetChange]);
 
-  const passives = equippedSkillObjects.filter(s => s.is_passive);
-  const actives  = equippedSkillObjects.filter(s => !s.is_passive);
+  // Pad to 12 cells so the grid always shows all slots
+  const cells = [...equippedObjs];
+  while (cells.length < 12) cells.push(null);
 
   return (
-    <div className="card">
+    <div className="card skill-panel-card">
       <div className="inv-header">
         <div className="section-title" style={{ marginBottom: 0 }}>
           Skills
@@ -76,42 +115,41 @@ export default function SkillPanel({
         <button className="inv-add-btn" onClick={() => setBookOpen(true)}>⚡ Skillbook</button>
       </div>
 
-      {equippedSkillObjects.length === 0 ? (
-        <div className="inv-empty">No skills equipped. Open Skillbook to equip.</div>
-      ) : (
-        <div className="equipped-skill-list">
-          {actives.length > 0 && (
-            <>
-              <div className="skill-group-label">Active</div>
-              {actives.map(skill => (
-                <EquippedSkillRow
-                  key={skill.id}
-                  skill={skill}
-                  mp={mp}
-                  maxMp={maxMp}
-                  exhaustion={exhaustion}
-                  onUse={() => handleUse(skill)}
-                />
-              ))}
-            </>
-          )}
-          {passives.length > 0 && (
-            <>
-              <div className="skill-group-label">Passive</div>
-              {passives.map(skill => (
-                <EquippedSkillRow
-                  key={skill.id}
-                  skill={skill}
-                  mp={mp}
-                  maxMp={maxMp}
-                  exhaustion={exhaustion}
-                  onUse={() => handleUse(skill)}
-                />
-              ))}
-            </>
-          )}
-        </div>
-      )}
+      {/* Desktop 6×2 grid */}
+      <div className="skill-grid-6x2">
+        {cells.map((skill, i) =>
+          skill ? (
+            <SkillCell
+              key={skill.id}
+              skill={skill}
+              mp={mp}
+              exhaustion={exhaustion}
+              onUse={() => handleUse(skill)}
+            />
+          ) : (
+            <div key={`empty-${i}`} className="skill-cell empty">
+              <div className="skill-cell-empty-label">—</div>
+            </div>
+          )
+        )}
+      </div>
+
+      {/* Mobile fallback list */}
+      <div className="skill-list-mobile">
+        {equippedObjs.length === 0 ? (
+          <div className="inv-empty">No skills equipped. Open Skillbook to equip.</div>
+        ) : (
+          equippedObjs.map(skill => (
+            <SkillListRow
+              key={skill.id}
+              skill={skill}
+              mp={mp}
+              exhaustion={exhaustion}
+              onUse={() => handleUse(skill)}
+            />
+          ))
+        )}
+      </div>
 
       {bookOpen && (
         <SkillbookModal

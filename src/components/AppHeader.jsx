@@ -1,8 +1,12 @@
-export default function AppHeader({ partyCount, activeName }) {
+import { memo } from "react";
+
+const AppHeader = memo(function AppHeader({ partyCount, activeName }) {
   return (
-    <div className="header">
+    <div className="masthead">
       <h1>Dungeon Tracker</h1>
-      <p>Party of {partyCount} · {activeName ?? "—"}</p>
+      <p>Character {partyCount}{activeName ? ` · ${activeName}` : ""}</p>
     </div>
   );
-}
+});
+
+export default AppHeader;

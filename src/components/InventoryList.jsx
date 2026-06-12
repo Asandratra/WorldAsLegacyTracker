@@ -58,9 +58,10 @@ const ItemRow = memo(function ItemRow({
   const subLine = () => {
     if (entry.kind === "weapon") {
       const parts = [];
-      if (entry.slash_power > 0) parts.push(`Slash ${entry.slash_power}`);
-      if (entry.blunt_power > 0) parts.push(`Blunt ${entry.blunt_power}`);
-      if (entry.pierce_power > 0) parts.push(`Pierce ${entry.pierce_power}`);
+      if (entry.slash_power) parts.push(`Slash ${entry.slash_power}`);
+      if (entry.blunt_power) parts.push(`Blunt ${entry.blunt_power}`);
+      if (entry.pierce_power) parts.push(`Pierce ${entry.pierce_power}`);
+      if (entry.block_power) parts.push(`Block ${entry.block_power}`);
       return parts.length ? parts.join(" · ") : null;
     }
     if (entry.kind === "equipment" && entry.armor > 0) return `Armor +${entry.armor}`;
@@ -134,23 +135,25 @@ const InventoryList = memo(function InventoryList({ inventory, equipped, onChang
         <button className="inv-add-btn" onClick={() => setModalOpen(true)}>+ Add Item</button>
       </div>
 
-      <div className="inv-list">
-        {inventory.length === 0 ? (
-          <div className="inv-empty">No items yet. Add your first.</div>
-        ) : (
-          inventory.map(entry => (
-            <ItemRow
-              key={entry.id}
-              entry={entry}
-              equipped={equipped}
-              slotFull={entry.kind === "equipment" && isSlotOccupied(equipped, entry.slot)}
-              onIncrement={() => incrementQty(entry.id, 1)}
-              onDecrement={() => incrementQty(entry.id, -1)}
-              onDelete={() => removeEntry(entry.id)}
-              onEquip={onEquip}
-            />
-          ))
-        )}
+      <div className="inv-scroll-inner">
+        <div className="inv-list">
+          {inventory.length === 0 ? (
+            <div className="inv-empty">No items yet. Add your first.</div>
+          ) : (
+            inventory.map(entry => (
+              <ItemRow
+                key={entry.id}
+                entry={entry}
+                equipped={equipped}
+                slotFull={entry.kind === "equipment" && isSlotOccupied(equipped, entry.slot)}
+                onIncrement={() => incrementQty(entry.id, 1)}
+                onDecrement={() => incrementQty(entry.id, -1)}
+                onDelete={() => removeEntry(entry.id)}
+                onEquip={onEquip}
+              />
+            ))
+          )}
+        </div>
       </div>
 
       {modalOpen && (

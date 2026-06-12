@@ -6,9 +6,10 @@ const ARMOR_SLOTS = { head: "Head", upper: "Upper", lower: "Lower" };
 function WeaponSubLine({ item }) {
   if (!item) return null;
   const parts = [];
-  if (item.slash_power > 0) parts.push(`Slash ${item.slash_power}`);
-  if (item.blunt_power > 0) parts.push(`Blunt ${item.blunt_power}`);
-  if (item.pierce_power > 0) parts.push(`Pierce ${item.pierce_power}`);
+  if (item.slash_power) parts.push(`Slash ${item.slash_power}`);
+  if (item.blunt_power) parts.push(`Blunt ${item.blunt_power}`);
+  if (item.pierce_power) parts.push(`Pierce ${item.pierce_power}`);
+  if (item.block_power) parts.push(`Block ${item.block_power}`);
   if (!parts.length) return null;
   return <div className="equip-slot-sub">{parts.join(" · ")}</div>;
 }

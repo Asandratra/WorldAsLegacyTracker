@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   ITEM_TYPES, EQUIPMENT_SLOTS, WEAPON_HAND_TYPES,
-  createBlankEntry,
+  createBlankEntry
 } from "../utils/Inventory.js";
 
 const KIND_LABELS = { item: "Item", equipment: "Equipment", weapon: "Weapon" };
@@ -93,19 +93,39 @@ export default function AddItemModal({ onAdd, onClose }) {
             <div className="modal-row">
               <div className="modal-field">
                 <div className="label">Slash</div>
-                <input type="number" min={0} value={form.slash_power} onChange={e => set("slash_power", parseInt(e.target.value) || 0)} />
+                <input
+                  type="text"
+                  placeholder="e.g., 2d6, 1d8+2"
+                  value={form.slash_power}
+                  onChange={e => set("slash_power", e.target.value)}
+                />
               </div>
               <div className="modal-field">
                 <div className="label">Blunt</div>
-                <input type="number" min={0} value={form.blunt_power} onChange={e => set("blunt_power", parseInt(e.target.value) || 0)} />
+                <input
+                  type="text"
+                  placeholder="e.g., 2d6, 1d8+2"
+                  value={form.blunt_power}
+                  onChange={e => set("blunt_power", e.target.value)}
+                />
               </div>
               <div className="modal-field">
                 <div className="label">Pierce</div>
-                <input type="number" min={0} value={form.pierce_power} onChange={e => set("pierce_power", parseInt(e.target.value) || 0)} />
+                <input
+                  type="text"
+                  placeholder="e.g., 2d6, 1d8+2"
+                  value={form.pierce_power}
+                  onChange={e => set("pierce_power", e.target.value)}
+                />
               </div>
               <div className="modal-field">
                 <div className="label">Block</div>
-                <input type="number" min={0} value={form.block_power} onChange={e => set("block_power", parseInt(e.target.value) || 0)} />
+                <input
+                  type="text"
+                  placeholder="e.g., 1d6, 2+1d4"
+                  value={form.block_power}
+                  onChange={e => set("block_power", e.target.value)}
+                />
               </div>
             </div>
           </>

@@ -36,7 +36,7 @@ export function newSkill(overrides = {}) {
     is_passive: false,
     type: null,               // subtype string, null if passive has no type
     time_unit: 0,             // 0–12
-    base_power: null,         // null if passive
+    base_power: "",           // empty string, or dice notation like "2d6" or "3+1d4"
     skill_mastery: 0,
     ...overrides,
   };

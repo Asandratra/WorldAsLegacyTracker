@@ -1,6 +1,8 @@
 export const EMOJIS = ["⚔️","🛡️","🧙","🏹","🗡️","🔮","💀","🐉","🦅","🐺","🧝","🔥","❄️","⚡","🌑","🍀"];
 export const DICE_TYPES = [4, 6, 10, 16, 20, 24, 60, 100];
-export const ABILITY_STATS = ["str","dex","con","int","wis","cha"];
+
+export const BASE_STATS = ["strength", "spirit", "dexterity", "reaction", "agility", "speed"];
+export const SOCIAL_STATS = ["negotiation", "rhetoric", "seduction", "empathy", "intimidation", "humour", "insight", "creativity", "oration", "manipulation", "leadership", "intelligence"];
 
 export function newEquipped() {
   return {
@@ -28,8 +30,28 @@ export function newCharacter(name = "New Adventurer") {
     exhaustion: 0,           // 0–100 percent
     armor: 10,
     gold: 0,
-    str: 10, dex: 10, con: 10,
-    int: 10, wis: 10, cha: 10,
+    base_stats: {
+      strength: 10,
+      spirit: 10,
+      dexterity: 10,
+      reaction: 10,
+      agility: 10,
+      speed: 10,
+    },
+    social_stats: {
+      negotiation: 10,
+      rhetoric: 10,
+      seduction: 10,
+      empathy: 10,
+      intimidation: 10,
+      humour: 10,
+      insight: 10,
+      creativity: 10,
+      oration: 10,
+      manipulation: 10,
+      leadership: 10,
+      intelligence: 10,
+    },
     notes: "",
     inventory: [],
     equipped: newEquipped(),

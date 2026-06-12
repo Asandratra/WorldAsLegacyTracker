@@ -12,7 +12,7 @@ export default function AddSkillModal({ onAdd, onClose }) {
       is_passive: val,
       type: val ? null : (f.type ?? ALL_SKILL_SUBTYPES[0]),
       time_unit: val ? 0 : f.time_unit,
-      base_power: val ? null : f.base_power,
+      base_power: val ? "" : f.base_power,
     }));
   };
 
@@ -94,10 +94,10 @@ export default function AddSkillModal({ onAdd, onClose }) {
             <div className="modal-field">
               <div className="label">Base Power</div>
               <input
-                type="number" min={0}
-                value={form.base_power ?? ""}
-                placeholder="—"
-                onChange={e => set("base_power", e.target.value === "" ? null : parseInt(e.target.value) || 0)}
+                type="text"
+                placeholder="e.g., 2d6, 1d8+2"
+                value={form.base_power}
+                onChange={e => set("base_power", e.target.value)}
               />
             </div>
             <div className="modal-field">

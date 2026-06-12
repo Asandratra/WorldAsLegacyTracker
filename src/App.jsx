@@ -4,47 +4,42 @@ import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
 import DiceRoller from "./components/DiceRoller.jsx";
-import CharacterSheet from "./components/CharacterSheet.jsx";
+import { LeftColumn, RightColumn } from "./components/CharacterSheet.jsx";
 import ImportExport from "./components/ImportExport.jsx";
 
-// Inject CSS into <head> once at module load — never touched again
+// Inject all CSS once into <head> — never re-evaluated on renders
 const styleEl = document.createElement("style");
 styleEl.textContent = globalCss + equipmentCss + skillCss;
 document.head.appendChild(styleEl);
 
-// Load once, share between both state initialisers
 const _initial = loadPartyFromStorage();
 
 export default function App() {
-  const [party, setParty] = useState(_initial);
+  const [party, setParty]     = useState(_initial);
   const [activeId, setActiveId] = useState(_initial[0]?.id ?? null);
   const [dicePool, setDicePool] = useState({});
 
   const addCharacter = useCallback(() => {
     const c = newCharacter();
-    setParty(prev => {
-      const next = [...prev, c];
-      savePartyToStorage(next);
-      return next;
-    });
+    setParty(prev => { const n = [...prev, c]; savePartyToStorage(n); return n; });
     setActiveId(c.id);
   }, []);
 
   const updateChar = useCallback((updated) => {
     setParty(prev => {
-      const next = prev.map(c => c.id === updated.id ? updated : c);
-      savePartyToStorage(next);
-      return next;
+      const n = prev.map(c => c.id === updated.id ? updated : c);
+      savePartyToStorage(n);
+      return n;
     });
   }, []);
 
   const deleteChar = useCallback((id) => {
     setParty(prev => {
       const filtered = prev.filter(c => c.id !== id);
-      const next = filtered.length ? filtered : [newCharacter()];
-      savePartyToStorage(next);
-      setActiveId(next[0]?.id ?? null);
-      return next;
+      const n = filtered.length ? filtered : [newCharacter()];
+      savePartyToStorage(n);
+      setActiveId(n[0]?.id ?? null);
+      return n;
     });
   }, []);
 
@@ -57,9 +52,11 @@ export default function App() {
   const active = party.find(c => c.id === activeId) ?? party[0];
 
   return (
-    <div className="app">
+    <div className="app-shell">
+      {/* ── Masthead ── */}
       <AppHeader partyCount={party.length} activeName={active?.name} />
 
+      {/* ── Party tabs (full width) ── */}
       <PartyTabs
         party={party}
         activeId={active?.id}
@@ -67,19 +64,31 @@ export default function App() {
         onAdd={addCharacter}
       />
 
-      <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
-
+      {/* ── Two-column body ── */}
       {active ? (
-        <CharacterSheet
-          key={active.id}
-          char={active}
-          onChange={updateChar}
-          onDelete={() => deleteChar(active.id)}
-        />
+        <div className="sheet-layout">
+          {/* LEFT — character info, vitals, stats, equipment, notes */}
+          <div className="col-left">
+            <LeftColumn
+              char={active}
+              onChange={updateChar}
+              onDelete={() => deleteChar(active.id)}
+            />
+          </div>
+
+          {/* RIGHT — dice, skills grid, scrollable inventory */}
+          <div className="col-right">
+            <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
+            <RightColumn
+              char={active}
+              onChange={updateChar}
+            />
+          </div>
+        </div>
       ) : (
-        <div className="empty">
-          <span>⚔️</span>
-          No adventurers yet. Add a character to begin.
+        <div className="empty-state">
+          <div className="empty-state-icon">⚔</div>
+          <div>No adventurers yet. Add a character above.</div>
         </div>
       )}
 

@@ -3,6 +3,23 @@ export const ITEM_TYPES = ["item", "equipment", "weapon"];
 export const EQUIPMENT_SLOTS = ["head", "upper", "lower", "accessory"];
 export const WEAPON_HAND_TYPES = ["single_hand", "dual_hand"];
 
+/**
+ * Validates and normalizes dice notation.
+ * Accepts formats like: "2d6", "3", "2+1d6", "1d6+2"
+ * Returns the normalized string or empty string if invalid.
+ */
+export function normalizeDiceNotation(input) {
+  if (!input || input.trim() === "") return "";
+  const str = input.trim();
+  
+  // Match patterns: (num)(d|+d)(num)?, (num), (d(num))
+  const diceRegex = /^(\d+)?d(\d+)([+\-]\d+)?$|^\d+([+\-]\d+d\d+)?$|^d\d+([+\-]\d+)?$/;
+  
+  if (!diceRegex.test(str)) return "";
+  
+  return str;
+}
+
 export function newItem(overrides = {}) {
   return {
     id: crypto.randomUUID(),
@@ -33,10 +50,10 @@ export function newWeapon(overrides = {}) {
     name: "",
     description: "",
     hand_type: "single_hand",
-    slash_power: 0,
-    blunt_power: 0,
-    pierce_power: 0,
-    block_power: 0,
+    slash_power: "",
+    blunt_power: "",
+    pierce_power: "",
+    block_power: "",
     ...overrides,
   };
 }
@@ -56,11 +73,18 @@ export function itemKindLabel(entry) {
 
 /** Returns the dominant power stat label for a weapon */
 export function dominantPower(weapon) {
+  const getPowerValue = (notation) => {
+    if (!notation || notation === "") return 0;
+    // Extract numeric values for comparison
+    const numMatch = notation.match(/\d+/);
+    return numMatch ? parseInt(numMatch[0]) : 0;
+  };
+  
   const stats = [
-    { label: "Slash", val: weapon.slash_power },
-    { label: "Blunt", val: weapon.blunt_power },
-    { label: "Pierce", val: weapon.pierce_power },
-    { label: "Block", val: weapon.block_power }
+    { label: "Slash", val: getPowerValue(weapon.slash_power), notation: weapon.slash_power },
+    { label: "Blunt", val: getPowerValue(weapon.blunt_power), notation: weapon.blunt_power },
+    { label: "Pierce", val: getPowerValue(weapon.pierce_power), notation: weapon.pierce_power },
+    { label: "Block", val: getPowerValue(weapon.block_power), notation: weapon.block_power }
   ];
   const top = stats.reduce((a, b) => (b.val > a.val ? b : a));
   return top.val > 0 ? top.label : null;
