@@ -42,6 +42,21 @@ export default function HpTracker({ hp, maxHp, armor, onUpdate }) {
         </div>
       </div>
 
+      {/* Armor Class */}
+      <div className="field-row">
+        <div className="field-group" style={{ maxWidth: 120 }}>
+          <div className="label">Armor</div>
+          <input
+            type="number"
+            min={0}
+            value={armor}
+            onChange={e => onUpdate({ armor: parseInt(e.target.value) || 0 })}
+          />
+        </div>
+      </div>
+
+      <hr className="divider" />
+
       {/* Quick damage / heal */}
       <div className="delta-row">
         <span className="delta-label">Quick:</span>
@@ -56,21 +71,6 @@ export default function HpTracker({ hp, maxHp, armor, onUpdate }) {
         <div className="hp-btns">
           <button className="hp-btn heal" onClick={() => applyHp(1)} title="Heal">＋</button>
           <button className="hp-btn dmg"  onClick={() => applyHp(-1)} title="Damage">－</button>
-        </div>
-      </div>
-
-      <hr className="divider" />
-
-      {/* Armor Class */}
-      <div className="field-row">
-        <div className="field-group" style={{ maxWidth: 120 }}>
-          <div className="label">Armor Class</div>
-          <input
-            type="number"
-            min={0}
-            value={armor}
-            onChange={e => onUpdate({ armor: parseInt(e.target.value) || 0 })}
-          />
         </div>
       </div>
     </div>

@@ -195,7 +195,7 @@ function StatsSection({ char, onChange, equipped }) {
 
             {radarPoints.map((p, i) => (
               <text style={{fontSize:10}} key={i} x={p.labelX} y={p.labelY} textAnchor="middle" alignmentBaseline="middle" className="radar-label-text">
-                {p.key.slice(0, 3).toLowerCase()} {getTotal(p.key, p.val)} { getTotal(p.key, p.val)<0 ? "["+getDiceBonus(getTotal(p.key, p.val))+"]" : "[+"+getDiceBonus(getTotal(p.key, p.val))+"]"}
+                {p.key.slice(0, 3).toLowerCase()} {getTotal(p.key, p.val)} { getTotal(p.key, p.val)<0 ? "("+getDiceBonus(getTotal(p.key, p.val))+")" : "(+"+getDiceBonus(getTotal(p.key, p.val))+")"}
               </text>
             ))}
           </svg>
@@ -229,21 +229,6 @@ function StatsSection({ char, onChange, equipped }) {
                     />
                     <button className="hp-btn" onClick={() => updateStat(activeCategory, p.key, p.val + 1)}>+</button>
                   </div>
-                  {(() => {
-                    const mod   = getModifier(p.key);
-                    const total = p.val + mod;
-                    const dice  = getDiceBonus(total);
-                    return (
-                      <div className="stat-detail-col">
-                        <span className="stat-total-display">
-                          {p.val}
-                          {mod !== 0 && <span className={`stat-mod-inline ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
-                          <span className="stat-equals">= {total}</span>
-                        </span>
-                        {dice > 0 && <span className="stat-dice-bonus">+{dice}d bonus</span>}
-                      </div>
-                    );
-                  })()}
                 </div>
               ))}
             </div>

@@ -724,6 +724,197 @@ textarea {
 .xp-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .level-badge { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); letter-spacing: 1px; }
 .xp-text { font-size: 12px; color: var(--ink-dim); }
+
+/* ── Radar Chart Extensions ── */
+.radar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.radar-chart-wrapper {
+  width: 100%;
+  max-width: 280px;
+  background: var(--paper-dark);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: inset 0 1px 3px var(--shadow);
+}
+
+.radar-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.radar-grid-line {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.radar-axis-line {
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.radar-poly-fill {
+  fill: var(--gold-faint);
+  opacity: 0.35;
+}
+
+.radar-poly-stroke {
+  fill: none;
+  stroke: var(--gold-light);
+  stroke-width: 2;
+}
+
+.radar-node {
+  fill: var(--red);
+  stroke: var(--paper);
+  stroke-width: 1.5;
+}
+
+.radar-label-text {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  fill: var(--ink-mid);
+  font-weight: 600;
+}
+
+.radar-inputs-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.radar-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--paper-dark);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.radar-input-row .label {
+  margin-bottom: 0;
+  width: 80px;
+}
+
+.radar-counter-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.radar-counter-box input {
+  width: 40px;
+  text-align: center;
+  font-family: 'IM Fell English', serif;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 2px;
+  border: none;
+  background: transparent;
+}
+
+.radar-counter-box input::-webkit-outer-spin-button,
+.radar-counter-box input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.radar-input-row .stat-modifier {
+  width: 30px;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* ── Stat Sheet Modal Styling ── */
+.stat-edit-trigger {
+  margin-top: 12px;
+  padding: 6px 16px;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.stat-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(18, 11, 5, 0.6); /* Tinted with your deep ink tone */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.stat-modal-content {
+  background: var(--paper);
+  border: 3px double var(--gold);
+  border-radius: 4px;
+  width: 90%;
+  max-width: 360px;
+  padding: 20px;
+  box-shadow: 0 8px 24px var(--shadow);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.stat-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed var(--border-dark);
+  padding-bottom: 8px;
+}
+
+.stat-modal-header h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--red);
+  margin: 0;
+  font-size: 18px;
+}
+
+.stat-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--ink-dim);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.stat-modal-close:hover {
+  color: var(--red);
+}
+
+.stat-modal-footer {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stat-modal-footer .btn {
+  font-family: 'Cinzel', serif;
+  min-width: 80px;
+}
 `;
 
 export const equipmentCss = `
