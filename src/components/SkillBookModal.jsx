@@ -1,5 +1,6 @@
 import { useState, memo, useCallback } from "react";
-import { skillBadge, getPrimaryType, MAX_EQUIPPED_SKILLS } from "../utils/Skill.js";
+import { skillBadge, getPrimaryType, techStatBonus, MAX_EQUIPPED_SKILLS } from "../utils/Skill.js";
+import { fmtPower } from "../utils/Inventory.js";
 import AddSkillModal from "./AddSkillModal.jsx";
 
 function SkillCosts({ skill }) {
@@ -22,8 +23,8 @@ function SkillMeta({ skill }) {
           {primary && <span className="skill-meta-primary">{primary} /</span>} {skill.type}
         </div>
       )}
-      {skill.base_power && (
-        <div className="skill-meta-tag power">PWR {skill.base_power}</div>
+      {skill.base_power?.count > 0 && (
+        <div className="skill-meta-tag power">PWR {fmtPower(skill.base_power)}</div>
       )}
     </div>
   );

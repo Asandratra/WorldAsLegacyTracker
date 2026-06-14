@@ -26,6 +26,8 @@ export default function App() {
   }, []);
 
   const updateChar = useCallback((updated) => {
+    console.log("updateChar received:", updated);
+    
     setParty(prev => {
       const n = prev.map(c => c.id === updated.id ? updated : c);
       savePartyToStorage(n);

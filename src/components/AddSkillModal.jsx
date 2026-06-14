@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { newSkill, SKILL_TYPE_TREE, ALL_SKILL_SUBTYPES, isValidBasePower } from "../utils/Skill.js";
+import { newSkill, SKILL_TYPE_TREE, ALL_SKILL_SUBTYPES } from "../utils/Skill.js";
+import { newPower } from "../utils/Inventory.js";
 import DiceInput from "./DiceInput.jsx";
 
 export default function AddSkillModal({ onAdd, onClose }) {
   const [form, setForm] = useState(newSkill());
-  const [errors, setErrors] = useState({});
 
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }));
 
@@ -12,29 +12,16 @@ export default function AddSkillModal({ onAdd, onClose }) {
     setForm(f => ({
       ...f,
       is_passive: val,
+      // Keep type/base_power as dice objects regardless — just hide the fields in the UI
       type: val ? null : (f.type ?? ALL_SKILL_SUBTYPES[0]),
-      time_unit: val ? 0 : (f.time_unit ?? 0),
-      base_power: val ? "" : (f.base_power ?? ""),
+      time_unit: val ? 0 : f.time_unit,
+      // base_power stays a dice object always; count:0 means "no power defined"
+      base_power: f.base_power ?? newPower(),
     }));
-    setErrors({});
   };
 
   const handleAdd = () => {
-    const newErrors = {};
-    
-    if (!form.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!form.is_passive && !isValidBasePower(form.base_power)) {
-      newErrors.base_power = "Invalid dice notation (e.g., 2d6, 1d8+2)";
-    }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
+    if (!form.name.trim()) return;
     onAdd({ ...form, skill_mastery: 0 });
     onClose();
   };
@@ -65,14 +52,8 @@ export default function AddSkillModal({ onAdd, onClose }) {
 
         {/* Name */}
         <div className="modal-field">
-          <div className="label">Name {errors.name && <span style={{ color: 'var(--red)' }}>*</span>}</div>
-          <input 
-            type="text" 
-            placeholder="Fireball…" 
-            value={form.name} 
-            onChange={e => { set("name", e.target.value); if (errors.name) setErrors(errs => ({ ...errs, name: '' })); }}
-          />
-          {errors.name && <div style={{ fontSize: '12px', color: 'var(--red)', marginTop: '4px' }}>{errors.name}</div>}
+          <div className="label">Name</div>
+          <input type="text" placeholder="Fireball…" value={form.name} onChange={e => set("name", e.target.value)} />
         </div>
 
         {/* Description */}
@@ -115,18 +96,11 @@ export default function AddSkillModal({ onAdd, onClose }) {
         {!form.is_passive && (
           <div className="modal-row">
             <div className="modal-field">
-              <div className="label">Base Power {errors.base_power && <span style={{ color: 'var(--red)' }}>*</span>}</div>
+              <div className="label">Base Power <span style={{fontStyle:"italic",fontWeight:400,letterSpacing:0,textTransform:"none",fontSize:10,color:"var(--ink-faint)"}}>e.g. 2d6</span></div>
               <DiceInput
-                value={form.base_power}
+                value={form.base_power ?? newPower()}
                 onChange={v => set("base_power", v)}
               />
-              {/* <input
-                type="text"
-                placeholder="e.g., 2d6, 1d8+2"
-                value={form.base_power}
-                onChange={e => { set("base_power", e.target.value); if (errors.base_power) setErrors(errs => ({ ...errs, base_power: '' })); }}
-              /> */}
-              {errors.base_power && <div style={{ fontSize: '12px', color: 'var(--red)', marginTop: '4px' }}>{errors.base_power}</div>}
             </div>
             <div className="modal-field">
               <div className="label">Time Units (0–12)</div>
@@ -136,10 +110,7 @@ export default function AddSkillModal({ onAdd, onClose }) {
         )}
 
         <div className="modal-footer">
-          <button className="btn primary" onClick={() => {
-            set("base_power", `${form.base_power.count}d${form.base_power.faces}`)
-            handleAdd();
-          }}>Add Skill</button>
+          <button className="btn primary" onClick={handleAdd}>Add Skill</button>
           <button className="btn" onClick={onClose}>Cancel</button>
         </div>
       </div>

@@ -5,13 +5,13 @@
  * Add more subtypes (or primary types) here as needed.
  */
 export const SKILL_TYPE_TREE = {
-  Elemental: ["Thermodynamic", "Photonic", "Geomancy", "Hydromancy", "Atmostpheric", "Biosynthesis"],
-  Chaos: ["Combustion", "Corrosion", "Fortune", "Warp", "Void", "Paradox"],
-  Arcana: ["Gravity", "Chronomancy", "Spatial", "Kinetic", "Resonance", "Sygal"],
-  Psychic: ["Telepathic", "Dreamscape", "Illusion", "Emotion", "Manifestation", "Cognition"],
-  Holy: ["Vitality", "Protection", "Blessing", "Aura", "Purification", "Bond"],
-  Occult: ["Blood", "Necromancy", "Umbral", "Pact", "Hex", "Soul"],
-  Physical: ["Might", "Finesse", "Prowess", "Endurance", "Stealth", "Vanguard"]
+  Elemental: ["Thermodynamic", "Photonic", "Geomancy", "Hydromancy", "Atmospheric", "Biosynthesis"],
+  Chaos:     ["Combustion", "Corrosion", "Fortune", "Warp", "Void", "Paradox"],
+  Arcana:    ["Gravity", "Chronomancy", "Spatial", "Kinetic", "Resonance", "Sygal"],
+  Psychic:   ["Telepathic", "Dreamscape", "Illusion", "Emotion", "Manifestation", "Cognition"],
+  Holy:      ["Vitality", "Protection", "Blessing", "Aura", "Purification", "Bond"],
+  Occult:    ["Blood", "Necromancy", "Umbral", "Pact", "Hex", "Soul"],
+  Physical:  ["Might", "Finesse", "Prowess", "Endurance", "Stealth", "Vanguard"],
 };
 
 /** Flat list of all subtypes for dropdowns */
@@ -36,9 +36,9 @@ export function newSkill(overrides = {}) {
     mp_cost: 0,
     exhaustion_cost: 0,       // percent 0–100
     is_passive: false,
-    type: null,               // subtype string, null if passive has no type
+    type: ALL_SKILL_SUBTYPES[0] ?? null,  // default to first available subtype
     time_unit: 0,             // 0–12
-    base_power: {count:0, faces:6},           // empty string, or dice notation like "2d6" or "3+1d4"
+    base_power: { count: 0, faces: 6 },  // always a dice object; count 0 = no power
     skill_mastery: 0,
     ...overrides,
   };
@@ -48,19 +48,6 @@ export function newSkill(overrides = {}) {
 export function skillBadge(skill) {
   if (skill.is_passive) return "PSV";
   return skill.type ? skill.type.slice(0, 3).toUpperCase() : "ACT";
-}
-
-/**
- * Validate base_power format (dice notation)
- * Examples: "2d6", "1d8+2", "3d4+1", "1d20-2"
- * Returns true if valid or empty (empty is allowed)
- */
-export function isValidBasePower(str) {
-  str=`${str.count}d${str.faces}`
-  if (!str || str.trim() === "") return true; // Empty is allowed
-  // Regex: matches patterns like "2d6", "2d6+3", "2d6-1", etc.
-  const diceRegex = /^(\d+d\d+)(\s*[+-]\s*\d+)?(\s*\+\s*\d+d\d+)*$/i;
-  return diceRegex.test(str.trim());
 }
 
 /** Returns sorted mastery map: { [primaryType]: { [subtype]: count } } */
@@ -73,4 +60,24 @@ export function buildMasteryMap(skillset) {
     map[primary][skill.type] = (map[primary][skill.type] ?? 0) + (skill.skill_mastery ?? 0);
   }
   return map;
+}
+
+/**
+ * Given a skill, return the tech_stats key to increment when it is used.
+ * The skill.type is a subtype string (e.g. "Fire") — we lowercase it to get the key.
+ * Returns null for passive skills or skills without a type.
+ */
+export function techKeyForSkill(skill) {
+  if (skill.is_passive || !skill.type) return null;
+  return skill.type.toLowerCase();
+}
+
+/** Dice bonus for weapon mastery: 1 per 24 points */
+export function weaponMasteryBonus(mastery) {
+  return Math.floor(mastery / 24);
+}
+
+/** Dice bonus for tech stat: 1 per 12 points */
+export function techStatBonus(val) {
+  return Math.floor(val / 12);
 }

@@ -29,7 +29,7 @@ const DiceInput = memo(function DiceInput({ value = { count: 0, faces: 6 }, onCh
         onChange={e => set("faces", Math.max(4, parseInt(e.target.value) || 1))}
       >
         {DICE_TYPES.map(faces => 
-          <option value={faces}>{faces}</option>
+          <option key={faces} value={faces}>{faces}</option>
         )}
       </select>
     </div>

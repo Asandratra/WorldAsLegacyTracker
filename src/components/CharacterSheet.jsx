@@ -87,14 +87,17 @@ function useCharSheet(char, onChange) {
   /* skills */
   const handleSkillsetChange    = useCallback((s) => onChange({ ...char, skillset: s }),       [char, onChange]);
   const handleEquippedSkillChange = useCallback((s) => onChange({ ...char, equippedSkills: s }), [char, onChange]);
-  const handleSkillCharUpdate   = useCallback((f) => onChange({ ...char, ...f }),               [char, onChange]);
+  const handleSkillCharUpdate = useCallback((changes) => {
+  const updatedChar = { ...char, ...changes };
+    onChange(updatedChar);     // ← send full updated character
+  }, [char, onChange]);
 
   return {
     update, updateMany,
     equipped, inventory, skillset, equippedSkills,
     mp, maxMp, mpPct, exhPct,
     handleEquip, handleUnequip,
-    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate,
+    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate
   };
 }
 

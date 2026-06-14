@@ -1,11 +1,14 @@
 import { useState, memo, useCallback } from "react";
-import { skillBadge, getPrimaryType } from "../utils/Skill.js";
+import { skillBadge, getPrimaryType, techStatBonus } from "../utils/Skill.js";
+import { fmtPower } from "../utils/Inventory.js";
 import SkillbookModal from "./SkillBookModal.jsx";
 
-const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, onUse }) {
-  const canUse = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
-  const badge  = skillBadge(skill);
-  const primary = skill.type ? getPrimaryType(skill.type) : null;
+const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, onUse }) {
+  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
+  const badge     = skillBadge(skill);
+  const primary   = skill.type ? getPrimaryType(skill.type) : null;
+  const techKey   = skill.type?.toLowerCase();
+  const techBonus = techKey && tech_stats ? techStatBonus(tech_stats[techKey] ?? 0) : 0;
 
   return (
     <div className={`skill-cell ${skill.is_passive ? "passive" : "active"} ${canUse || skill.is_passive ? "" : "depleted"}`}>
@@ -23,8 +26,10 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, onUse }) {
         )}
         {!skill.is_passive && (
           <>
-            {skill.mp_cost > 0    && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
+            {skill.mp_cost > 0         && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
             {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}%</span>}
+            {skill.base_power?.count > 0 && <span className="skill-cost-pill pwr">{fmtPower(skill.base_power)}</span>}
+            {techBonus > 0 && <span className="skill-cost-pill tech">+{techBonus}d</span>}
           </>
         )}
       </div>
@@ -51,10 +56,12 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, onUse }) {
 });
 
 /* Fallback list row used on mobile where grid is collapsed */
-const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse }) {
-  const canUse = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
-  const badge  = skillBadge(skill);
-  const primary = skill.type ? getPrimaryType(skill.type) : null;
+const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse, tech_stats }) {
+  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
+  const badge     = skillBadge(skill);
+  const primary   = skill.type ? getPrimaryType(skill.type) : null;
+  const techKey   = skill.type?.toLowerCase();
+  const techBonus = techKey && tech_stats ? techStatBonus(tech_stats[techKey] ?? 0) : 0;
 
   return (
     <div className={`equipped-skill-row ${skill.is_passive ? "passive" : ""}`}>
@@ -64,6 +71,11 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse }
           {skill.name || "Unnamed"}
           {skill.skill_mastery > 0 && <span className="skill-mastery-badge">×{skill.skill_mastery}</span>}
         </div>
+        {skill.description && (
+          <div className="skill-desc">
+            {skill.description}
+          </div>
+        )}
         <div className="skill-inline-meta">
           {primary && skill.type && <span className="skill-type-pill">{primary} · {skill.type}</span>}
           {!skill.is_passive && (
@@ -92,7 +104,6 @@ export default function SkillPanel({
     .filter(Boolean);
 
   const handleUse = useCallback((skill) => {
-    console.log(skill);
     // Update MP and exhaustion costs
     const updates = {
       mp:         Math.max(0, mp - skill.mp_cost),
@@ -107,6 +118,8 @@ export default function SkillPanel({
         [techKey]: (tech_stats[techKey] ?? 0) + 1,
       };
     }
+
+    console.log(updates)
     
     onCharUpdate(updates);
     
@@ -139,6 +152,7 @@ export default function SkillPanel({
               skill={skill}
               mp={mp}
               exhaustion={exhaustion}
+              tech_stats={tech_stats}
               onUse={() => handleUse(skill)}
             />
           ) : (

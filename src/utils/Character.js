@@ -19,7 +19,7 @@ export const TECH_STATS = Object.values(TECH_STAT_TREE).flat().map(s => s.toLowe
 
 function defaultTechStats() {
   const obj = {};
-  for (const key of TECH_STATS) obj[key] = 0;
+  for (const key of TECH_STATS) obj[key.toLowerCase()] = 0;
   return obj;
 }
 
@@ -60,16 +60,12 @@ export function newCharacter(name = "New Adventurer") {
       manipulation: 10, leadership: 10,  intelligence: 10,
     },
     tech_stats: defaultTechStats(),
-    weapon_mastery: {
-      slash: 0,
-      blunt: 0,
-      pierce: 0,
-    },
     notes: "",
     inventory: [],
     equipped: newEquipped(),
     skillset: [],
     equippedSkills: [],
+    weapon_mastery: { slash: 0, blunt: 0, pierce: 0 },
   };
 }
 
