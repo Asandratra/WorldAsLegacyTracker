@@ -1,6 +1,6 @@
 import { useState, memo, useCallback } from "react";
 import { skillBadge, getPrimaryType } from "../utils/Skill.js";
-import SkillbookModal from "./SkillbookModal.jsx";
+import SkillbookModal from "./SkillBookModal.jsx";
 
 const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, onUse }) {
   const canUse = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
