@@ -69,11 +69,6 @@ export default function AddItemModal({ onAdd, onClose }) {
           <>
             <div className="modal-row">
               <div className="modal-field">
-                <div className="label">Armor Bonus</div>
-                <input type="number" min={0} value={form.armor}
-                  onChange={e => set("armor", parseInt(e.target.value) || 0)} />
-              </div>
-              <div className="modal-field">
                 <div className="label">Slot</div>
                 <select value={form.slot} onChange={e => set("slot", e.target.value)}>
                   {EQUIPMENT_SLOTS.map(s => (

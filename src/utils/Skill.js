@@ -5,11 +5,13 @@
  * Add more subtypes (or primary types) here as needed.
  */
 export const SKILL_TYPE_TREE = {
-  Elemental: ["Fire", "Water", "Wind", "Earth", "Lightning", "Ice", "Light", "Dark"],
-  Physical:  ["Strike", "Slash", "Pierce", "Throw", "Rush"],
-  Support:   ["Heal", "Buff", "Debuff", "Shield", "Summon"],
-  Arcane:    ["Hex", "Rune", "Void", "Time"],
-  Passive:   ["Aura", "Resistance", "Enhancement"],
+  Elemental: ["Thermodynamic", "Photonic", "Geomancy", "Hydromancy", "Atmostpheric", "Biosynthesis"],
+  Chaos: ["Combustion", "Corrosion", "Fortune", "Warp", "Void", "Paradox"],
+  Arcana: ["Gravity", "Chronomancy", "Spatial", "Kinetic", "Resonance", "Sygal"],
+  Psychic: ["Telepathic", "Dreamscape", "Illusion", "Emotion", "Manifestation", "Cognition"],
+  Holy: ["Vitality", "Protection", "Blessing", "Aura", "Purification", "Bond"],
+  Occult: ["Blood", "Necromancy", "Umbral", "Pact", "Hex", "Soul"],
+  Physical: ["Might", "Finesse", "Prowess", "Endurance", "Stealth", "Vanguard"]
 };
 
 /** Flat list of all subtypes for dropdowns */
@@ -36,7 +38,7 @@ export function newSkill(overrides = {}) {
     is_passive: false,
     type: null,               // subtype string, null if passive has no type
     time_unit: 0,             // 0–12
-    base_power: "",           // empty string, or dice notation like "2d6" or "3+1d4"
+    base_power: {count:0, faces:6},           // empty string, or dice notation like "2d6" or "3+1d4"
     skill_mastery: 0,
     ...overrides,
   };
@@ -46,6 +48,19 @@ export function newSkill(overrides = {}) {
 export function skillBadge(skill) {
   if (skill.is_passive) return "PSV";
   return skill.type ? skill.type.slice(0, 3).toUpperCase() : "ACT";
+}
+
+/**
+ * Validate base_power format (dice notation)
+ * Examples: "2d6", "1d8+2", "3d4+1", "1d20-2"
+ * Returns true if valid or empty (empty is allowed)
+ */
+export function isValidBasePower(str) {
+  str=`${str.count}d${str.faces}`
+  if (!str || str.trim() === "") return true; // Empty is allowed
+  // Regex: matches patterns like "2d6", "2d6+3", "2d6-1", etc.
+  const diceRegex = /^(\d+d\d+)(\s*[+-]\s*\d+)?(\s*\+\s*\d+d\d+)*$/i;
+  return diceRegex.test(str.trim());
 }
 
 /** Returns sorted mastery map: { [primaryType]: { [subtype]: count } } */

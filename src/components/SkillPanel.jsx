@@ -82,7 +82,7 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse }
 });
 
 export default function SkillPanel({
-  skillset, equippedSkills, mp, exhaustion,
+  skillset, equippedSkills, mp, exhaustion, tech_stats,
   onSkillsetChange, onEquippedChange, onCharUpdate,
 }) {
   const [bookOpen, setBookOpen] = useState(false);
@@ -92,14 +92,29 @@ export default function SkillPanel({
     .filter(Boolean);
 
   const handleUse = useCallback((skill) => {
-    onCharUpdate({
+    console.log(skill);
+    // Update MP and exhaustion costs
+    const updates = {
       mp:         Math.max(0, mp - skill.mp_cost),
       exhaustion: Math.min(100, exhaustion + skill.exhaustion_cost),
-    });
+    };
+    
+    // Update tech_stats based on skill type
+    if (skill.type && tech_stats) {
+      const techKey = skill.type.toLowerCase();
+      updates.tech_stats = {
+        ...tech_stats,
+        [techKey]: (tech_stats[techKey] ?? 0) + 1,
+      };
+    }
+    
+    onCharUpdate(updates);
+    
+    // Increment skill_mastery
     onSkillsetChange(skillset.map(s =>
       s.id === skill.id ? { ...s, skill_mastery: (s.skill_mastery ?? 0) + 1 } : s
     ));
-  }, [mp, exhaustion, skillset, onCharUpdate, onSkillsetChange]);
+  }, [mp, exhaustion, tech_stats, skillset, onCharUpdate, onSkillsetChange]);
 
   // Pad to 12 cells so the grid always shows all slots
   const cells = [...equippedObjs];

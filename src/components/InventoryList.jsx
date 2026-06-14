@@ -1,6 +1,7 @@
 import { useState, memo, useCallback } from "react";
 import { itemKindLabel } from "../utils/Inventory.js";
 import AddItemModal from "./AddItemModal.jsx";
+import { WeaponSubLine, EquipSubLine } from "./EquipmentPanel.jsx";
 
 function isSlotOccupied(equipped, slot) {
   if (!equipped) return false;
@@ -57,14 +58,15 @@ const ItemRow = memo(function ItemRow({
 
   const subLine = () => {
     if (entry.kind === "weapon") {
-      const parts = [];
+      /* const parts = [];
       if (entry.slash_power) parts.push(`Slash ${entry.slash_power}`);
       if (entry.blunt_power) parts.push(`Blunt ${entry.blunt_power}`);
       if (entry.pierce_power) parts.push(`Pierce ${entry.pierce_power}`);
       if (entry.block_power) parts.push(`Block ${entry.block_power}`);
-      return parts.length ? parts.join(" · ") : null;
+      return parts.length ? parts.join(" · ") : null; */
+      return <WeaponSubLine item={entry}/>
     }
-    if (entry.kind === "equipment" && entry.armor > 0) return `Armor +${entry.armor}`;
+    if (entry.kind === "equipment") return <EquipSubLine item={entry}/>;
     return null;
   };
 

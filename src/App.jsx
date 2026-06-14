@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss, skillCss, powerModCss } from "./styles/GlobalCSS.js";
+import { globalCss, equipmentCss, skillCss, attackCss, powerModCss, statDisplayCss } from "./styles/GlobalCSS.js";
 import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
@@ -9,7 +9,7 @@ import ImportExport from "./components/ImportExport.jsx";
 
 // Inject all CSS once into <head> — never re-evaluated on renders
 const styleEl = document.createElement("style");
-styleEl.textContent = globalCss + equipmentCss + skillCss + powerModCss;
+styleEl.textContent = globalCss + equipmentCss + skillCss + attackCss + powerModCss + statDisplayCss;
 document.head.appendChild(styleEl);
 
 const _initial = loadPartyFromStorage();

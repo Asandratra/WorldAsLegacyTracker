@@ -1264,6 +1264,161 @@ export const skillCss = `
   }
 `;
 
+export const attackCss = `
+  /* ── Attack panel card ── */
+  .attack-panel-card { }
+
+  /* ── Attack grid 6 (desktop) ── */
+  .attack-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  /* On mobile, hide the grid and show the flat list instead */
+  .attack-list-mobile { display: flex; flex-direction: column; gap: 5px; }
+  @media (min-width: 900px) {
+    .attack-list-mobile { display: none; }
+  }
+  @media (max-width: 899px) {
+    .attack-grid-6 { display: none; }
+  }
+
+  /* ── Attack cell (grid item) ── */
+  .attack-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 9px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    min-height: 100px;
+    transition: border-color 0.12s;
+  }
+  .attack-cell.empty {
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 5px,
+      rgba(192,160,96,0.06) 5px,
+      rgba(192,160,96,0.06) 6px
+    );
+    border-style: dashed;
+    opacity: 0.6;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+  }
+  .attack-cell-empty-label { font-family: 'IM Fell English', serif; font-size: 18px; color: var(--ink-faint); }
+
+  /* ── Attack cell top section ── */
+  .attack-cell-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .attack-type-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Crimson Text', serif;
+  }
+  
+  /* ── Mastery badge ── */
+  .mastery-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--red);
+    background: rgba(122,28,28,0.1);
+    border: 1px solid var(--red-dim);
+    border-radius: 2px;
+    padding: 1px 4px;
+    white-space: nowrap;
+  }
+
+  /* ── Mastery bar ── */
+  .attack-cell-mastery {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mastery-bar-container {
+    height: 8px;
+    background: var(--paper);
+    border: 1px solid var(--border-dark);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+  }
+  .mastery-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 1px;
+    transition: width 0.3s;
+  }
+  .mastery-text {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink-dim);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Attack button ── */
+  .attack-btn {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border: 1px solid var(--border-dark);
+    background: transparent;
+    color: var(--red);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    margin-top: auto;
+    width: 100%;
+    text-align: center;
+  }
+  .attack-btn:hover { background: rgba(122,28,28,0.1); border-color: var(--red-dim); }
+  .attack-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: var(--border); color: var(--ink-faint); }
+
+  /* ── Attack list row (mobile) ── */
+  .attack-list-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .attack-info {
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .attack-name {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .attack-mastery-text {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    font-family: 'Cinzel', serif;
+  }
+`;
+
 export const powerModCss = `
   /* ── DiceInput ── */
   .dice-input-row {
@@ -1279,8 +1434,8 @@ export const powerModCss = `
     font-size: 13px;
   }
   .dice-input-faces {
-    width: 38px !important;
-    text-align: center;
+    width: 48px !important;
+    text-align: start;
     padding: 4px 4px !important;
     font-family: 'Cinzel', serif;
     font-size: 13px;
@@ -1465,4 +1620,406 @@ export const powerModCss = `
     background: rgba(138,100,32,0.06);
     letter-spacing: 0.5px;
   }
+`;
+export const statDisplayCss = `
+  /* ── Stat section tabs ── */
+  .stat-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .stat-tab {
+    flex: 1;
+    padding: 5px 4px;
+    border: 1px solid var(--border);
+    background: var(--paper-dark);
+    color: var(--ink-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+  }
+  .stat-tab.active {
+    border-color: var(--border-dark);
+    color: var(--gold);
+    background: var(--paper);
+  }
+  .stat-tab:hover:not(.active) {
+    border-color: var(--border-dark);
+    color: var(--ink);
+  }
+
+  /* ── Stat list (display) ── */
+  .stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-radius: 2px;
+    transition: background 0.1s;
+  }
+  .stat-row:nth-child(odd)  { background: rgba(200,160,60,0.06); }
+  .stat-row:nth-child(even) { background: transparent; }
+  .stat-row:hover           { background: rgba(200,160,60,0.12); }
+
+  .stat-row-label {
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    color: var(--ink-mid);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-row-values {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .stat-row-base {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--ink);
+    min-width: 22px;
+    text-align: right;
+  }
+
+  .stat-row-mod {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    min-width: 24px;
+    text-align: center;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .stat-row-mod.pos { color: var(--green-light); background: rgba(36,56,32,0.1); border: 1px solid var(--green); }
+  .stat-row-mod.neg { color: var(--red);         background: rgba(122,28,28,0.08); border: 1px solid var(--red-dim); }
+
+  .stat-row-sep {
+    font-family: 'IM Fell English', serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  .stat-row-total {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    min-width: 26px;
+    text-align: right;
+  }
+
+  .stat-row-bonus {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold);
+    background: rgba(138,100,32,0.08);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 1px 5px;
+    letter-spacing: 0.5px;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  /* ── Technique group labels ── */
+  .tech-stat-group {
+    margin-bottom: 6px;
+  }
+  .tech-stat-group-label {
+    font-family: 'IM Fell English', serif;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 1.5px;
+    padding: 4px 8px 2px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+
+  /* ── Stat edit modal ── */
+  .stat-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,15,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 16px;
+  }
+  .stat-modal-content {
+    background: var(--paper);
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(30,15,0,0.45);
+  }
+  .stat-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .stat-modal-header h3 {
+    font-family: 'IM Fell English', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: 1px;
+  }
+  .stat-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    color: var(--ink-dim);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color 0.12s;
+  }
+  .stat-modal-close:hover { color: var(--red); }
+  .stat-modal-footer {
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  /* ── Stat edit list (in modal) ── */
+  .stat-edit-list {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+  }
+  .stat-edit-list::-webkit-scrollbar { width: 3px; }
+  .stat-edit-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .stat-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(192,160,96,0.2);
+  }
+  .stat-edit-row:last-child { border-bottom: none; }
+
+  .stat-edit-label {
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    color: var(--ink-mid);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-edit-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .stat-edit-btn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border);
+    background: var(--paper-dark);
+    color: var(--ink-dim);
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s;
+    font-family: monospace;
+    line-height: 1;
+  }
+  .stat-edit-btn:hover { border-color: var(--border-dark); color: var(--ink); }
+
+  .stat-edit-input {
+    width: 48px !important;
+    text-align: center;
+    padding: 4px !important;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .stat-edit-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 90px;
+    justify-content: flex-end;
+  }
+
+  /* ── Vital breakdown display (HP/MP + modifiers) ── */
+  .vital-base-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 4px 0;
+  }
+  .vital-base-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .vital-base-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vital-base-val {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: var(--ink);
+    min-width: 24px;
+    text-align: center;
+  }
+  .vital-base-edit {
+    width: 22px; height: 22px;
+    border: 1px solid var(--border);
+    background: var(--paper-dark);
+    color: var(--ink-dim);
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s;
+    font-family: monospace;
+    line-height: 1;
+  }
+  .vital-base-edit:hover { border-color: var(--border-dark); color: var(--ink); }
+
+  .vital-effective {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: var(--ink);
+    min-width: 32px;
+    text-align: center;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 4px 6px;
+  }
+  .vital-breakdown {
+    font-size: 11px;
+    color: var(--ink-dim);
+    font-style: italic;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vital-breakdown-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vital-mod-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .vital-mod-tag.pos { color: var(--green-light); border-color: var(--green); }
+  .vital-mod-tag.neg { color: var(--red); border-color: var(--red-dim); }
+  .vital-equals {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .exhausted-warning {
+    margin-top: 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--red);
+  }
+  /* ── Combined HP + Armor bar ── */
+  .combined-bar-track {
+    flex: 1;
+    height: 12px;
+    background: var(--paper-deep);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: visible;
+    position: relative;
+    display: flex;
+  }
+
+  /* HP segment — left portion, red fill */
+  .combined-bar-hp {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red-dim), var(--red));
+    border-radius: 2px 0 0 2px;
+    transition: width 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  /* Armor segment — continues right of HP, bronze/gold fill */
+  .combined-bar-armor {
+    height: 100%;
+    background: linear-gradient(90deg, #8a6820, #c4a040);
+    transition: width 0.25s ease;
+    flex-shrink: 0;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Vertical divider tick between HP zone and Armor zone */
+  .combined-bar-divider {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: var(--border-dark);
+    transform: translateX(-1px);
+    pointer-events: none;
+    border-radius: 1px;
+  }
+
+  /* Armor badge next to the HP numbers */
+  .armor-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: #8a6820;
+    background: rgba(138,100,32,0.1);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 2px 6px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  /* Small reminder line below the bar */
+  .armor-note {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-style: italic;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+
 `;

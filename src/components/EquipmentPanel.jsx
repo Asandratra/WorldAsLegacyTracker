@@ -12,7 +12,7 @@ function fmtMods(mods) {
     .join(" · ");
 }
 
-function WeaponSubLine({ item }) {
+export function WeaponSubLine({ item }) {
   if (!item) return null;
   const powers = [
     ["Slash",  item.slash_power],
@@ -32,7 +32,7 @@ function WeaponSubLine({ item }) {
   );
 }
 
-function EquipSubLine({ item }) {
+export function EquipSubLine({ item }) {
   if (!item) return null;
   const parts = [];
   if (item.armor > 0) parts.push(`Armor +${item.armor}`);

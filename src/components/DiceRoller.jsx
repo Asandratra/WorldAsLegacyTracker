@@ -54,7 +54,7 @@ export default function DiceRoller({ pool, onPoolChange }) {
 
   return (
     <div className="card" style={{ marginBottom: 16 }}>
-      <div className="section-title">🎲 Dice Roller</div>
+      <div className="section-title">Dice Roller</div>
 
       {/* Die type grid */}
       <div className="dice-grid">

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { BASE_STATS, SOCIAL_STATS, newEquipped } from "../utils/Character.js";
+import { BASE_STATS, SOCIAL_STATS, TECH_STAT_TREE, newEquipped } from "../utils/Character.js";
 import { sumModifier } from "../utils/Inventory.js";
 import EmojiPicker from "./EmojiPicker.jsx";
 import HpTracker from "./HpTracker.jsx";
@@ -7,6 +7,7 @@ import HpTracker from "./HpTracker.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
 import SkillPanel from "./SkillPanel.jsx";
+import WeaponAttackPanel from "./WeaponAttackPanel.jsx";
 
 /* ─────────────────────────────────────────────
    Shared hook — derives all state & handlers
@@ -102,139 +103,190 @@ function useCharSheet(char, onChange) {
    Tabbed view: Base Stats and Social Stats
 ───────────────────────────────────────────── */
 function StatsSection({ char, onChange, equipped }) {
-  const [statTab, setStatTab] = useState("base");
-  const [isEditing, setIsEditing] = useState(false); // Controls modal visibility
+  const [tab, setTab] = useState("base");
+  const [editing, setEditing] = useState(false);
 
   const updateStat = useCallback(
-    (category, statName, val) => {
-      const stats = { ...char[category] };
-      stats[statName] = val;
-      onChange({ ...char, [category]: stats });
+    (category, key, val) => {
+      onChange({ ...char, [category]: { ...char[category], [key]: Math.max(0, val) } });
     },
     [char, onChange]
   );
 
-  const baseStats = useMemo(() => char.base_stats ?? {}, [char.base_stats]);
-  const socialStats = useMemo(() => char.social_stats ?? {}, [char.social_stats]);
+  const getMod   = (key) => (equipped ? sumModifier(equipped, key) : 0);
+  const diceBonus = (total) => Math.floor(total / 3);
 
-  const activeKeys = statTab === "base" ? BASE_STATS : SOCIAL_STATS;
-  const activeData = statTab === "base" ? baseStats : socialStats;
-  const activeCategory = statTab === "base" ? "base_stats" : "social_stats";
-  // Sum stat modifiers from all equipped items for currently viewed stat group
-  const getModifier = (key) => equipped ? sumModifier(equipped, key) : 0;
-  const getTotal = (key, base) => base + getModifier(key);
-  const getDiceBonus = (total) => Math.floor(total / 3);
+  // ── Resolve active dataset for current tab ──────────────────────────────────
+  const TAB_CONFIG = {
+    base:      { label: "Base",      category: "base_stats",   keys: BASE_STATS   },
+    social:    { label: "Social",    category: "social_stats", keys: SOCIAL_STATS },
+    technique: { label: "Technique", category: "tech_stats",   keys: null         }, // uses tree
+  };
 
-  // Radar math dimensions
-  const size = 300;
-  const center = size / 2;
-  const radius = 100; 
-  const maxStatValue = 20; 
+  const cfg      = TAB_CONFIG[tab];
+  const statData = char[cfg.category] ?? {};
 
-  const radarPoints = useMemo(() => {
-    const totalSides = activeKeys.length;
-    return activeKeys.map((key, i) => {
-      const val = activeData[key] ?? 10;
-      const angle = (Math.PI * 2 / totalSides) * i - Math.PI / 2;
-      
-      const calculatedRadius = (Math.min(val, maxStatValue) / maxStatValue) * radius;
-      const x = center + calculatedRadius * Math.cos(angle);
-      const y = center + calculatedRadius * Math.sin(angle);
+  // For technique tab, produce a flat key list from the tree
+  const flatKeys = tab === "technique"
+    ? Object.values(TECH_STAT_TREE).flat().map(s => s.toLowerCase())
+    : cfg.keys;
 
-      const labelX = center + (radius + 22) * Math.cos(angle);
-      const labelY = center + (radius + 12) * Math.sin(angle);
-
-      return { key, val, x, y, labelX, labelY, angle };
-    });
-  }, [activeKeys, activeData, center, radius]);
-
-  const polygonPointsStr = radarPoints.map(p => `${p.x},${p.y}`).join(" ");
-  const concentricGridLevels = [0.25, 0.5, 0.75, 1];
+  // ── Stat row renderer ───────────────────────────────────────────────────────
+  const StatDisplayRow = ({ label, statKey, base }) => {
+    const mod   = getMod(statKey);
+    const total = base + mod;
+    const bonus = diceBonus(total);
+    return (
+      <div className="stat-row">
+        <span className="stat-row-label">{label}</span>
+        <div className="stat-row-values">
+          <span className="stat-row-base">{base}</span>
+          {mod !== 0 && (
+            <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>
+              {mod > 0 ? "+" : ""}{mod}
+            </span>
+          )}
+          <span className="stat-row-sep">=</span>
+          <span className="stat-row-total">{total}</span>
+          {bonus > 0 && (
+            <span className="stat-row-bonus">D+{bonus}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
-      <div className="modal-kind-tabs" style={{ marginBottom: 16 }}>
-        <button
-          className={`modal-kind-tab ${statTab === "base" ? "active" : ""}`}
-          onClick={() => setStatTab("base")}
-        >
-          Base
-        </button>
-        <button
-          className={`modal-kind-tab ${statTab === "social" ? "active" : ""}`}
-          onClick={() => setStatTab("social")}
-        >
-          Social
-        </button>
+      {/* Tab bar */}
+      <div className="stat-tabs">
+        {Object.entries(TAB_CONFIG).map(([key, { label }]) => (
+          <button
+            key={key}
+            className={`stat-tab ${tab === key ? "active" : ""}`}
+            onClick={() => setTab(key)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      <div className="radar-container">
-        {/* Radar Map Frame */}
-        <div className="radar-chart-wrapper">
-          <svg viewBox={`0 0 ${size} ${size}`} className="radar-svg">
-            {concentricGridLevels.map((lvl, index) => {
-              const gridPoints = activeKeys.map((_, i) => {
-                const angle = (Math.PI * 2 / activeKeys.length) * i - Math.PI / 2;
-                return `${center + (radius * lvl) * Math.cos(angle)},${center + (radius * lvl) * Math.sin(angle)}`;
-              }).join(" ");
-              return <polygon key={index} points={gridPoints} className="radar-grid-line" />;
-            })}
-
-            {radarPoints.map((p, i) => {
-              const edgeX = center + radius * Math.cos(p.angle);
-              const edgeY = center + radius * Math.sin(p.angle);
-              return <line key={i} x1={center} y1={center} x2={edgeX} y2={edgeY} className="radar-axis-line" />;
-            })}
-
-            <polygon points={polygonPointsStr} className="radar-poly-fill" />
-            <polygon points={polygonPointsStr} className="radar-poly-stroke" />
-
-            {radarPoints.map((p, i) => (
-              <circle key={i} cx={p.x} cy={p.y} r="4" className="radar-node" />
-            ))}
-
-            {radarPoints.map((p, i) => (
-              <text style={{fontSize:10}} key={i} x={p.labelX} y={p.labelY} textAnchor="middle" alignmentBaseline="middle" className="radar-label-text">
-                {p.key.slice(0, 3).toLowerCase()} {getTotal(p.key, p.val)} { getTotal(p.key, p.val)<0 ? "("+getDiceBonus(getTotal(p.key, p.val))+")" : "(+"+getDiceBonus(getTotal(p.key, p.val))+")"}
-              </text>
-            ))}
-          </svg>
+      {/* ── Base & Social tabs — grouped list ── */}
+      {tab !== "technique" && (
+        <div className="stat-list">
+          {flatKeys.map(key => (
+            <StatDisplayRow
+              key={key}
+              label={key.charAt(0).toUpperCase() + key.slice(1)}
+              statKey={key}
+              base={statData[key] ?? 0}
+            />
+          ))}
         </div>
+      )}
 
-        {/* Edit triggering button */}
-        <button className="btn primary-btn stat-edit-trigger" onClick={() => setIsEditing(true)}>
-          Edit Attributes
-        </button>
-      </div>
-
-      {/* STAT EDITING MODAL OVERLAY */}
-      {isEditing && (
-        <div className="stat-modal-overlay" onClick={() => setIsEditing(false)}>
-          <div className="stat-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="stat-modal-header">
-              <h3>Edit {statTab === "base" ? "Base" : "Social"} Attributes</h3>
-              <button className="stat-modal-close" onClick={() => setIsEditing(false)}>×</button>
+      {/* ── Technique tab — grouped by primary type ── */}
+      {tab === "technique" && (
+        <div className="stat-list">
+          {Object.entries(TECH_STAT_TREE).map(([primary, subs]) => (
+            <div key={primary} className="tech-stat-group">
+              <div className="tech-stat-group-label">{primary}</div>
+              {subs.map(sub => {
+                const key = sub.toLowerCase();
+                return (
+                  <StatDisplayRow
+                    key={key}
+                    label={sub}
+                    statKey={key}
+                    base={statData[key] ?? 0}
+                  />
+                );
+              })}
             </div>
-            
-            <div className="radar-inputs-list">
-              {radarPoints.map(p => (
-                <div className="radar-input-row" key={p.key}>
-                  <label className="label">{p.key.charAt(0).toUpperCase() + p.key.slice(1)}</label>
-                  <div className="radar-counter-box">
-                    <button className="hp-btn" onClick={() => updateStat(activeCategory, p.key, Math.max(0, p.val - 1))}>-</button>
-                    <input
-                      type="number" min={0} max={30}
-                      value={p.val}
-                      onChange={e => updateStat(activeCategory, p.key, Math.max(0, parseInt(e.target.value) || 0))}
-                    />
-                    <button className="hp-btn" onClick={() => updateStat(activeCategory, p.key, p.val + 1)}>+</button>
+          ))}
+        </div>
+      )}
+
+      {/* Edit button */}
+      <button className="btn primary" style={{ marginTop: 12 }} onClick={() => setEditing(true)}>
+        Edit {TAB_CONFIG[tab].label} Stats
+      </button>
+
+      {/* Edit modal */}
+      {editing && (
+        <div className="stat-modal-overlay" onClick={() => setEditing(false)}>
+          <div className="stat-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="stat-modal-header">
+              <h3>Edit {TAB_CONFIG[tab].label} Stats</h3>
+              <button className="stat-modal-close" onClick={() => setEditing(false)}>×</button>
+            </div>
+
+            <div className="stat-edit-list">
+              {tab !== "technique" && flatKeys.map(key => {
+                const base  = statData[key] ?? 0;
+                const mod   = getMod(key);
+                const total = base + mod;
+                const bonus = diceBonus(total);
+                return (
+                  <div className="stat-edit-row" key={key}>
+                    <span className="stat-edit-label">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                    <div className="stat-edit-counter">
+                      <button className="stat-edit-btn" onClick={() => updateStat(cfg.category, key, base - 1)}>−</button>
+                      <input
+                        className="stat-edit-input"
+                        type="number" min={0}
+                        value={base}
+                        onChange={e => updateStat(cfg.category, key, parseInt(e.target.value) || 0)}
+                      />
+                      <button className="stat-edit-btn" onClick={() => updateStat(cfg.category, key, base + 1)}>+</button>
+                    </div>
+                    <div className="stat-edit-right">
+                      {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
+                      <span className="stat-row-sep">=</span>
+                      <span className="stat-row-total">{total}</span>
+                      {bonus > 0 && <span className="stat-row-bonus">D+{bonus}</span>}
+                    </div>
                   </div>
+                );
+              })}
+
+              {tab === "technique" && Object.entries(TECH_STAT_TREE).map(([primary, subs]) => (
+                <div key={primary}>
+                  <div className="tech-stat-group-label" style={{ marginTop: 12, marginBottom: 4 }}>{primary}</div>
+                  {subs.map(sub => {
+                    const key   = sub.toLowerCase();
+                    const base  = statData[key] ?? 0;
+                    const mod   = getMod(key);
+                    const total = base + mod;
+                    const bonus = diceBonus(total);
+                    return (
+                      <div className="stat-edit-row" key={key}>
+                        <span className="stat-edit-label">{sub}</span>
+                        <div className="stat-edit-counter">
+                          <button className="stat-edit-btn" onClick={() => updateStat(cfg.category, key, base - 1)}>−</button>
+                          <input
+                            className="stat-edit-input"
+                            type="number" min={0}
+                            value={base}
+                            onChange={e => updateStat(cfg.category, key, parseInt(e.target.value) || 0)}
+                          />
+                          <button className="stat-edit-btn" onClick={() => updateStat(cfg.category, key, base + 1)}>+</button>
+                        </div>
+                        <div className="stat-edit-right">
+                          {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
+                          <span className="stat-row-sep">=</span>
+                          <span className="stat-row-total">{total}</span>
+                          {bonus > 0 && <span className="stat-row-bonus">D+{bonus}</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
 
             <div className="stat-modal-footer">
-              <button className="btn" onClick={() => setIsEditing(false)}>Done</button>
+              <button className="btn primary" onClick={() => setEditing(false)}>Done</button>
             </div>
           </div>
         </div>
@@ -242,6 +294,7 @@ function StatsSection({ char, onChange, equipped }) {
     </>
   );
 }
+
 
 /* ─────────────────────────────────────────────
    LEFT COLUMN
@@ -333,7 +386,7 @@ export function LeftColumn({ char, onChange, onDelete }) {
 
       {/* Ability scores */}
       <div className="card">
-        <div className="section-title">Ability Scores</div>
+        <div className="section-title">Stats</div>
         <StatsSection char={char} onChange={onChange} equipped={equipped} />
       </div>
 
@@ -375,6 +428,13 @@ export function RightColumn({ char, onChange }) {
 
   return (
     <>
+      {/* Weapon Attack Panel */}
+      <WeaponAttackPanel
+        equipped={equipped}
+        weapon_mastery={char.weapon_mastery}
+        onCharUpdate={handleSkillCharUpdate}
+      />
+
       {/* Skills — 6×2 grid */}
       <SkillPanel
         skillset={skillset}
@@ -382,6 +442,7 @@ export function RightColumn({ char, onChange }) {
         mp={mp}
         maxMp={maxMp}
         exhaustion={exhPct}
+        tech_stats={char.tech_stats}
         onSkillsetChange={handleSkillsetChange}
         onEquippedChange={handleEquippedSkillChange}
         onCharUpdate={handleSkillCharUpdate}

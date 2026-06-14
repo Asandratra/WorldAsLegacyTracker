@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { DICE_TYPES } from "../utils/Character";
 
 /**
  * Renders two compact number inputs for a NdF dice value.
@@ -21,13 +22,16 @@ const DiceInput = memo(function DiceInput({ value = { count: 0, faces: 6 }, onCh
         onChange={e => set("count", e.target.value)}
       />
       <span className="dice-input-sep">d</span>
-      <input
+      <select
         className="dice-input-faces"
-        type="number" min={1} max={100}
         value={value.faces}
         disabled={disabled}
-        onChange={e => set("faces", Math.max(1, parseInt(e.target.value) || 1))}
-      />
+        onChange={e => set("faces", Math.max(4, parseInt(e.target.value) || 1))}
+      >
+        {DICE_TYPES.map(faces => 
+          <option value={faces}>{faces}</option>
+        )}
+      </select>
     </div>
   );
 });
