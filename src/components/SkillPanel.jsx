@@ -95,7 +95,7 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, tech_st
 
 export default function SkillPanel({
   skillset, equippedSkills, mp, exhaustion, tech_stats,
-  onSkillUse, onEquippedChange,
+  onSkillUse, onSkillsetChange, onEquippedChange,
 }) {
   const [bookOpen, setBookOpen] = useState(false);
 

@@ -470,6 +470,7 @@ export function RightColumn({ char, onChange }) {
         exhaustion={exhPct}
         tech_stats={char.tech_stats}
         onSkillUse={handleSkillUse}
+        onSkillsetChange={handleSkillsetChange}
         onEquippedChange={handleEquippedSkillChange}
       />
 
