@@ -1,7 +1,7 @@
 import { useState, memo, useCallback } from "react";
 import { skillBadge, getPrimaryType, techStatBonus } from "../utils/Skill.js";
 import { fmtPower } from "../utils/Inventory.js";
-import SkillbookModal from "./SkillBookModal.jsx";
+import SkillbookModal from "./SkillbookModal.jsx";
 
 const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, onUse }) {
   const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
@@ -56,7 +56,7 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, o
 });
 
 /* Fallback list row used on mobile where grid is collapsed */
-const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse, tech_stats }) {
+const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, tech_stats, onUse }) {
   const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
   const badge     = skillBadge(skill);
   const primary   = skill.type ? getPrimaryType(skill.type) : null;
@@ -95,7 +95,7 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, onUse, 
 
 export default function SkillPanel({
   skillset, equippedSkills, mp, exhaustion, tech_stats,
-  onSkillsetChange, onEquippedChange, onCharUpdate,
+  onSkillUse, onEquippedChange,
 }) {
   const [bookOpen, setBookOpen] = useState(false);
 
@@ -103,31 +103,11 @@ export default function SkillPanel({
     .map(id => skillset.find(s => s.id === id))
     .filter(Boolean);
 
+  // Single atomic call — CharacterSheet applies mp, exhaustion, tech_stat and
+  // skill_mastery all in one onChange, preventing stale-closure double-writes.
   const handleUse = useCallback((skill) => {
-    // Update MP and exhaustion costs
-    const updates = {
-      mp:         Math.max(0, mp - skill.mp_cost),
-      exhaustion: Math.min(100, exhaustion + skill.exhaustion_cost),
-    };
-    
-    // Update tech_stats based on skill type
-    if (skill.type && tech_stats) {
-      const techKey = skill.type.toLowerCase();
-      updates.tech_stats = {
-        ...tech_stats,
-        [techKey]: (tech_stats[techKey] ?? 0) + 1,
-      };
-    }
-
-    console.log(updates)
-    
-    onCharUpdate(updates);
-    
-    // Increment skill_mastery
-    onSkillsetChange(skillset.map(s =>
-      s.id === skill.id ? { ...s, skill_mastery: (s.skill_mastery ?? 0) + 1 } : s
-    ));
-  }, [mp, exhaustion, tech_stats, skillset, onCharUpdate, onSkillsetChange]);
+    onSkillUse(skill, skillset);
+  }, [skillset, onSkillUse]);
 
   // Pad to 12 cells so the grid always shows all slots
   const cells = [...equippedObjs];
@@ -174,6 +154,7 @@ export default function SkillPanel({
               skill={skill}
               mp={mp}
               exhaustion={exhaustion}
+              tech_stats={tech_stats}
               onUse={() => handleUse(skill)}
             />
           ))

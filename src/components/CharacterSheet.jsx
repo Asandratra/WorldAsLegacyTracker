@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import { BASE_STATS, SOCIAL_STATS, TECH_STAT_TREE, newEquipped } from "../utils/Character.js";
+import { BASE_STATS, SOCIAL_STATS, TECH_STAT_TREE, TECH_STATS, newEquipped } from "../utils/Character.js";
+import { techKeyForSkill } from "../utils/Skill.js";
 import { sumModifier } from "../utils/Inventory.js";
 import EmojiPicker from "./EmojiPicker.jsx";
 import HpTracker from "./HpTracker.jsx";
@@ -7,7 +8,6 @@ import HpTracker from "./HpTracker.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
 import SkillPanel from "./SkillPanel.jsx";
-import WeaponAttackPanel from "./WeaponAttackPanel.jsx";
 
 /* ─────────────────────────────────────────────
    Shared hook — derives all state & handlers
@@ -85,19 +85,47 @@ function useCharSheet(char, onChange) {
   }, [char, equipped, inventory, onChange]);
 
   /* skills */
-  const handleSkillsetChange    = useCallback((s) => onChange({ ...char, skillset: s }),       [char, onChange]);
-  const handleEquippedSkillChange = useCallback((s) => onChange({ ...char, equippedSkills: s }), [char, onChange]);
-  const handleSkillCharUpdate = useCallback((changes) => {
-  const updatedChar = { ...char, ...changes };
-    onChange(updatedChar);     // ← send full updated character
+  const handleSkillsetChange      = useCallback((s) => onChange({ ...char, skillset: s }),        [char, onChange]);
+  const handleEquippedSkillChange = useCallback((s) => onChange({ ...char, equippedSkills: s }),  [char, onChange]);
+  const handleSkillCharUpdate     = useCallback((f) => onChange({ ...char, ...f }),               [char, onChange]);
+
+  /* weapon mastery */
+  const handleAttack = useCallback((weapon, attackType) => {
+    const wm = { ...(char.weapon_mastery ?? { slash: 0, blunt: 0, pierce: 0 }) };
+    wm[attackType] = (wm[attackType] ?? 0) + 1;
+    onChange({ ...char, weapon_mastery: wm });
   }, [char, onChange]);
+
+  /* skill use — applies mp/exhaustion cost AND increments tech_stat */
+  const handleSkillUse = useCallback((skill, skillset) => {
+    const techKey = techKeyForSkill(skill);
+    const nextTech = techKey
+      ? { ...char.tech_stats, [techKey]: ((char.tech_stats ?? {})[techKey] ?? 0) + 1 }
+      : char.tech_stats;
+    onChange({
+      ...char,
+      mp:         Math.max(0, (char.mp ?? 0) - skill.mp_cost),
+      exhaustion: Math.min(100, (char.exhaustion ?? 0) + skill.exhaustion_cost),
+      skillset:   skillset.map(s =>
+        s.id === skill.id ? { ...s, skill_mastery: (s.skill_mastery ?? 0) + 1 } : s
+      ),
+      tech_stats: nextTech,
+    });
+  }, [char, onChange]);
+
+  const weaponMastery = useMemo(
+    () => char.weapon_mastery ?? { slash: 0, blunt: 0, pierce: 0 },
+    [char.weapon_mastery]
+  );
 
   return {
     update, updateMany,
     equipped, inventory, skillset, equippedSkills,
+    weaponMastery,
     mp, maxMp, mpPct, exhPct,
     handleEquip, handleUnequip,
-    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate
+    handleSkillsetChange, handleEquippedSkillChange,
+    handleSkillCharUpdate, handleSkillUse, handleAttack,
   };
 }
 
@@ -117,6 +145,7 @@ function StatsSection({ char, onChange, equipped }) {
   );
 
   const getMod   = (key) => (equipped ? sumModifier(equipped, key) : 0);
+  const getTotal = (key, base) => base + getMod(key);
   const diceBonus = (total) => Math.floor(total / 3);
 
   // ── Resolve active dataset for current tab ──────────────────────────────────
@@ -152,7 +181,7 @@ function StatsSection({ char, onChange, equipped }) {
           <span className="stat-row-sep">=</span>
           <span className="stat-row-total">{total}</span>
           {bonus > 0 && (
-            <span className="stat-row-bonus">D+{bonus}</span>
+            <span className="stat-row-bonus">+{bonus}d</span>
           )}
         </div>
       </div>
@@ -247,7 +276,7 @@ function StatsSection({ char, onChange, equipped }) {
                       {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
                       <span className="stat-row-sep">=</span>
                       <span className="stat-row-total">{total}</span>
-                      {bonus > 0 && <span className="stat-row-bonus">D+{bonus}</span>}
+                      {bonus > 0 && <span className="stat-row-bonus">+{bonus}d</span>}
                     </div>
                   </div>
                 );
@@ -279,7 +308,7 @@ function StatsSection({ char, onChange, equipped }) {
                           {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
                           <span className="stat-row-sep">=</span>
                           <span className="stat-row-total">{total}</span>
-                          {bonus > 0 && <span className="stat-row-bonus">D+{bonus}</span>}
+                          {bonus > 0 && <span className="stat-row-bonus">+{bonus}d</span>}
                         </div>
                       </div>
                     );
@@ -306,8 +335,9 @@ function StatsSection({ char, onChange, equipped }) {
 export function LeftColumn({ char, onChange, onDelete }) {
   const {
     update, updateMany,
-    equipped, mp, maxMp, mpPct, exhPct,
-    handleUnequip,
+    equipped, weaponMastery,
+    mp, maxMp, mpPct, exhPct,
+    handleUnequip, handleAttack,
   } = useCharSheet(char, onChange);
 
   const getModifier = (key) => equipped ? sumModifier(equipped, key) : 0;
@@ -389,12 +419,12 @@ export function LeftColumn({ char, onChange, onDelete }) {
 
       {/* Ability scores */}
       <div className="card">
-        <div className="section-title">Stats</div>
+        <div className="section-title">Ability Scores</div>
         <StatsSection char={char} onChange={onChange} equipped={equipped} />
       </div>
 
       {/* Equipment */}
-      <EquipmentPanel equipped={equipped} onUnequip={handleUnequip} />
+      <EquipmentPanel equipped={equipped} weaponMastery={weaponMastery} onUnequip={handleUnequip} onAttack={handleAttack} />
 
       {/* Notes */}
       <div className="card">
@@ -421,7 +451,8 @@ export function RightColumn({ char, onChange }) {
     skillset, equippedSkills,
     mp, maxMp, exhPct,
     handleEquip,
-    handleSkillsetChange, handleEquippedSkillChange, handleSkillCharUpdate,
+    handleSkillsetChange, handleEquippedSkillChange,
+    handleSkillCharUpdate, handleSkillUse,
   } = useCharSheet(char, onChange);
 
   const updateInventory = useCallback(
@@ -431,24 +462,15 @@ export function RightColumn({ char, onChange }) {
 
   return (
     <>
-      {/* Weapon Attack Panel */}
-      <WeaponAttackPanel
-        equipped={equipped}
-        weapon_mastery={char.weapon_mastery}
-        onCharUpdate={handleSkillCharUpdate}
-      />
-
       {/* Skills — 6×2 grid */}
       <SkillPanel
         skillset={skillset}
         equippedSkills={equippedSkills}
         mp={mp}
-        maxMp={maxMp}
         exhaustion={exhPct}
         tech_stats={char.tech_stats}
-        onSkillsetChange={handleSkillsetChange}
+        onSkillUse={handleSkillUse}
         onEquippedChange={handleEquippedSkillChange}
-        onCharUpdate={handleSkillCharUpdate}
       />
 
       {/* Inventory — scrollable card */}
