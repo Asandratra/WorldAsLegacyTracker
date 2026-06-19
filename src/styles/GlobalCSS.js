@@ -1264,161 +1264,6 @@ export const skillCss = `
   }
 `;
 
-export const attackCss = `
-  /* ── Attack panel card ── */
-  .attack-panel-card { }
-
-  /* ── Attack grid 6 (desktop) ── */
-  .attack-grid-6 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 0;
-  }
-
-  /* On mobile, hide the grid and show the flat list instead */
-  .attack-list-mobile { display: flex; flex-direction: column; gap: 5px; }
-  @media (min-width: 900px) {
-    .attack-list-mobile { display: none; }
-  }
-  @media (max-width: 899px) {
-    .attack-grid-6 { display: none; }
-  }
-
-  /* ── Attack cell (grid item) ── */
-  .attack-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px 9px;
-    background: var(--paper-dark);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    min-height: 100px;
-    transition: border-color 0.12s;
-  }
-  .attack-cell.empty {
-    background: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 5px,
-      rgba(192,160,96,0.06) 5px,
-      rgba(192,160,96,0.06) 6px
-    );
-    border-style: dashed;
-    opacity: 0.6;
-    align-items: center;
-    justify-content: center;
-    min-height: 80px;
-  }
-  .attack-cell-empty-label { font-family: 'IM Fell English', serif; font-size: 18px; color: var(--ink-faint); }
-
-  /* ── Attack cell top section ── */
-  .attack-cell-top {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .attack-type-label {
-    flex: 1;
-    font-size: 13px;
-    color: var(--ink);
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: 'Crimson Text', serif;
-  }
-  
-  /* ── Mastery badge ── */
-  .mastery-badge {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    color: var(--red);
-    background: rgba(122,28,28,0.1);
-    border: 1px solid var(--red-dim);
-    border-radius: 2px;
-    padding: 1px 4px;
-    white-space: nowrap;
-  }
-
-  /* ── Mastery bar ── */
-  .attack-cell-mastery {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .mastery-bar-container {
-    height: 8px;
-    background: var(--paper);
-    border: 1px solid var(--border-dark);
-    border-radius: 1px;
-    overflow: hidden;
-    position: relative;
-  }
-  .mastery-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light));
-    border-radius: 1px;
-    transition: width 0.3s;
-  }
-  .mastery-text {
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    color: var(--ink-dim);
-    text-align: center;
-    letter-spacing: 0.5px;
-  }
-
-  /* ── Attack button ── */
-  .attack-btn {
-    flex-shrink: 0;
-    padding: 4px 10px;
-    border: 1px solid var(--border-dark);
-    background: transparent;
-    color: var(--red);
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all 0.12s;
-    margin-top: auto;
-    width: 100%;
-    text-align: center;
-  }
-  .attack-btn:hover { background: rgba(122,28,28,0.1); border-color: var(--red-dim); }
-  .attack-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: var(--border); color: var(--ink-faint); }
-
-  /* ── Attack list row (mobile) ── */
-  .attack-list-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    background: var(--paper-dark);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-  }
-  .attack-info {
-    flex: 1;
-    overflow: hidden;
-    min-width: 0;
-  }
-  .attack-name {
-    font-size: 14px;
-    color: var(--ink);
-    font-weight: 600;
-  }
-  .attack-mastery-text {
-    font-size: 11px;
-    color: var(--ink-dim);
-    margin-top: 2px;
-    font-family: 'Cinzel', serif;
-  }
-`;
-
 export const powerModCss = `
   /* ── DiceInput ── */
   .dice-input-row {
@@ -1434,8 +1279,8 @@ export const powerModCss = `
     font-size: 13px;
   }
   .dice-input-faces {
-    width: 48px !important;
-    text-align: start;
+    width: 38px !important;
+    text-align: center;
     padding: 4px 4px !important;
     font-family: 'Cinzel', serif;
     font-size: 13px;
@@ -2021,5 +1866,541 @@ export const statDisplayCss = `
     letter-spacing: 0.3px;
     margin-bottom: 6px;
   }
+
+`;
+
+export const masteryAttackCss = `
+  /* ── Weapon attack buttons ── */
+  .weapon-attack-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .weapon-attack-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    background: var(--paper-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    color: var(--ink-dim);
+  }
+  .weapon-attack-btn:hover         { border-color: var(--border-dark); color: var(--ink); }
+  .weapon-attack-btn.slash:hover   { border-color: var(--red-dim); color: var(--red); background: rgba(122,28,28,0.06); }
+  .weapon-attack-btn.blunt:hover   { border-color: #6a4a20; color: #b07830; background: rgba(106,74,32,0.06); }
+  .weapon-attack-btn.pierce:hover  { border-color: var(--blue-light); color: var(--blue-light); background: rgba(36,48,88,0.06); }
+
+  .attack-btn-label { font-size: 9px; letter-spacing: 1.5px; }
+  .attack-btn-bonus {
+    font-size: 8px;
+    color: var(--gold);
+    background: rgba(138,100,32,0.12);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 0 3px;
+  }
+
+  /* ── Weapon mastery summary bar ── */
+  .weapon-mastery-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mastery-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+  }
+  .mastery-pill-label { color: var(--ink-dim); letter-spacing: 1px; text-transform: capitalize; }
+  .mastery-pill-val   { color: var(--ink); font-weight: 600; min-width: 20px; text-align: right; }
+  .mastery-pill-bonus {
+    color: var(--gold);
+    background: rgba(138,100,32,0.1);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 0 4px;
+    font-size: 9px;
+  }
+
+  /* ── Tech bonus pill on skill cells ── */
+  .skill-cost-pill.pwr  { border-color: #6a3a00; color: #c06810; background: rgba(106,58,0,0.08); }
+  .skill-cost-pill.tech { border-color: var(--green); color: var(--green-light); background: rgba(36,56,32,0.08); }
+`;
+
+export const encounterCss = `
+  /* ── Encounter shell ── */
+  .enc-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper-dark);
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(180,120,30,0.18) 0%, transparent 60%);
+  }
+
+  /* ── Top bar ── */
+  .enc-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: var(--paper);
+    border-bottom: 2px solid var(--border-dark);
+    box-shadow: 0 2px 8px var(--shadow);
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .enc-topbar-left  { display: flex; align-items: center; gap: 14px; }
+  .enc-topbar-right { display: flex; align-items: center; gap: 8px; }
+  .enc-topbar-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--ink);
+    text-transform: uppercase;
+    flex: 1;
+    text-align: center;
+  }
+  .enc-turn-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    border: 1px solid var(--border-dark);
+    border-radius: 3px;
+    padding: 4px 12px;
+    background: rgba(138,100,32,0.08);
+    letter-spacing: 1px;
+  }
+  .enc-turn-info {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+  .enc-btn {
+    padding: 7px 16px;
+    border: 1px solid var(--border-dark);
+    background: var(--paper-dark);
+    color: var(--ink-mid);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .enc-btn:hover       { background: var(--paper); color: var(--ink); }
+  .enc-btn.next        { border-color: var(--gold); color: var(--gold); }
+  .enc-btn.next:hover  { background: rgba(138,100,32,0.1); }
+  .enc-btn.end         { border-color: var(--red-dim); color: var(--red); }
+  .enc-btn.end:hover   { background: rgba(122,28,28,0.08); }
+
+  /* ── Three-column body ── */
+  .enc-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px) 1fr;
+    gap: 0;
+    min-height: 0;
+  }
+  @media (max-width: 860px) {
+    .enc-body { grid-template-columns: 1fr; }
+  }
+
+  /* ── Combatant panel (left / right) ── */
+  .enc-panel {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .enc-panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+
+  .enc-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper-dark);
+    flex-shrink: 0;
+  }
+  .enc-panel-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--ink);
+    flex: 1;
+  }
+  .enc-panel-title.opponent { color: var(--red); }
+  .enc-panel-title.party    { color: var(--gold); }
+
+  .enc-panel-actions { display: flex; gap: 6px; }
+  .enc-panel-btn {
+    padding: 4px 10px;
+    border: 1px dashed var(--border-dark);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+  }
+  .enc-panel-btn:hover { border-style: solid; color: var(--ink); }
+
+  .enc-combatant-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .enc-combatant-list::-webkit-scrollbar { width: 3px; }
+  .enc-combatant-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* ── Combatant card ── */
+  .enc-combatant-card {
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+    transition: border-color 0.12s;
+  }
+  .enc-combatant-card.has-action { border-color: var(--gold-faint); }
+  .enc-combatant-header { display: flex; align-items: center; gap: 8px; }
+
+  .enc-combatant-info {
+    flex: 1;
+    cursor: pointer;
+    min-width: 0;
+  }
+  .enc-combatant-info:hover .enc-combatant-name { color: var(--gold); }
+
+  .enc-combatant-name {
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.12s;
+  }
+  .enc-combatant-react {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 1px;
+    margin-top: 1px;
+  }
+
+  .enc-combatant-btns {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .enc-add-action-btn {
+    padding: 3px 8px;
+    border: 1px solid var(--border-dark);
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .enc-add-action-btn:hover { background: rgba(138,100,32,0.1); }
+
+  .enc-action-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(138,100,32,0.1);
+    border: 1px solid var(--gold-faint);
+    border-radius: 2px;
+    padding: 2px 8px;
+    max-width: 120px;
+  }
+  .enc-action-name {
+    font-family: 'Crimson Text', serif;
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .enc-action-tu {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .enc-remove-btn {
+    width: 20px; height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.5;
+    transition: all 0.1s;
+    flex-shrink: 0;
+  }
+  .enc-remove-btn:hover { opacity: 1; color: var(--red); }
+
+  /* ── Order panel (center) ── */
+  .enc-order-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--paper-dark);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .enc-order-header {
+    font-family: 'IM Fell English', serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--ink);
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper);
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .enc-order-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .enc-order-list::-webkit-scrollbar { width: 3px; }
+  .enc-order-list::-webkit-scrollbar-thumb { background: var(--border); }
+  .enc-order-empty {
+    margin: 20px 10px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* ── Order card ── */
+  .enc-order-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    border-left-width: 3px;
+  }
+  .enc-order-card.party    { border-left-color: var(--gold); }
+  .enc-order-card.opponent { border-left-color: var(--red); }
+
+  .enc-order-rank {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--ink-faint);
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .enc-order-body { flex: 1; min-width: 0; }
+  .enc-order-who {
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .enc-order-what {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .enc-order-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .enc-order-tu {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold);
+    background: rgba(138,100,32,0.08);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 1px 5px;
+  }
+  .enc-order-react {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Empty state ── */
+  .enc-empty {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13px;
+    padding: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ── Launch button on sheet page ── */
+  .enc-launch-row {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0 8px;
+  }
+  .enc-launch-row .btn {
+    flex: none;
+    padding: 10px 28px;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+  /* ── TU budget row in AddActionModal ── */
+  .enc-tu-budget-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .enc-tu-budget-label {
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-style: italic;
+  }
+  .enc-tu-budget-val {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* ── TU bar on combatant card ── */
+  .enc-tu-bar-wrap {
+    height: 4px;
+    background: var(--paper-deep);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 5px 0 4px;
+  }
+  .enc-tu-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.2s ease;
+  }
+
+  /* ── TU counter badge on card header ── */
+  .enc-tu-counter {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: var(--ink-faint);
+    padding: 2px 5px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--paper);
+    white-space: nowrap;
+  }
+
+  /* ── Action entries list on combatant card ── */
+  .enc-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .enc-action-entry {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    background: rgba(138,100,32,0.06);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .enc-action-tu-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold);
+    background: rgba(138,100,32,0.1);
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    padding: 1px 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .enc-action-entry-name {
+    font-size: 12px;
+    color: var(--ink-mid);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .enc-action-remove {
+    width: 16px; height: 16px;
+    border: none;
+    background: transparent;
+    color: var(--ink-faint);
+    font-size: 10px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.5;
+    border-radius: 2px;
+    flex-shrink: 0;
+    transition: all 0.1s;
+  }
+  .enc-action-remove:hover { opacity: 1; color: var(--red); }
 
 `;

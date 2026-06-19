@@ -1,15 +1,16 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss, skillCss, attackCss, powerModCss, statDisplayCss } from "./styles/GlobalCSS.js";
+import { globalCss, equipmentCss, skillCss, powerModCss, statDisplayCss, encounterCss } from "./styles/GlobalCSS.js";
 import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
 import DiceRoller from "./components/DiceRoller.jsx";
 import { LeftColumn, RightColumn } from "./components/CharacterSheet.jsx";
+import EncounterPage from "./page/EncounterPage.jsx";
 import ImportExport from "./components/ImportExport.jsx";
 
 // Inject all CSS once into <head> — never re-evaluated on renders
 const styleEl = document.createElement("style");
-styleEl.textContent = globalCss + equipmentCss + skillCss + attackCss + powerModCss + statDisplayCss;
+styleEl.textContent = globalCss + equipmentCss + skillCss + powerModCss + statDisplayCss + encounterCss;
 document.head.appendChild(styleEl);
 
 const _initial = loadPartyFromStorage();
@@ -18,6 +19,7 @@ export default function App() {
   const [party, setParty]     = useState(_initial);
   const [activeId, setActiveId] = useState(_initial[0]?.id ?? null);
   const [dicePool, setDicePool] = useState({});
+  const [page, setPage] = useState("sheet"); // "sheet" | "encounter"
 
   const addCharacter = useCallback(() => {
     const c = newCharacter();
@@ -26,8 +28,6 @@ export default function App() {
   }, []);
 
   const updateChar = useCallback((updated) => {
-    console.log("updateChar received:", updated);
-    
     setParty(prev => {
       const n = prev.map(c => c.id === updated.id ? updated : c);
       savePartyToStorage(n);
@@ -55,46 +55,58 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {/* ── Masthead ── */}
-      <AppHeader partyCount={party.length} activeName={active?.name} />
-
-      {/* ── Party tabs (full width) ── */}
-      <PartyTabs
-        party={party}
-        activeId={active?.id}
-        onSelect={setActiveId}
-        onAdd={addCharacter}
-      />
-
-      {/* ── Two-column body ── */}
-      {active ? (
-        <div className="sheet-layout">
-          {/* LEFT — character info, vitals, stats, equipment, notes */}
-          <div className="col-left">
-            <LeftColumn
-              char={active}
-              onChange={updateChar}
-              onDelete={() => deleteChar(active.id)}
-            />
-          </div>
-
-          {/* RIGHT — dice, skills grid, scrollable inventory */}
-          <div className="col-right">
-            <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
-            <RightColumn
-              char={active}
-              onChange={updateChar}
-            />
-          </div>
-        </div>
+      {page === "encounter" ? (
+        <EncounterPage onExit={() => setPage("sheet")} />
       ) : (
-        <div className="empty-state">
-          <div className="empty-state-icon">⚔</div>
-          <div>No adventurers yet. Add a character above.</div>
-        </div>
-      )}
+      <>
+        {/* ── Master head ── */}
+        <AppHeader partyCount={party.length} activeName={active?.name} />
 
-      <ImportExport party={party} onImport={importParty} />
+        {/* ── Party tabs (full width) ── */}
+        <PartyTabs
+          party={party}
+          activeId={active?.id}
+          onSelect={setActiveId}
+          onAdd={addCharacter}
+        />
+
+        {/* ── Two-column body ── */}
+        {active ? (
+          <div className="sheet-layout">
+            {/* LEFT — character info, vitals, stats, equipment, notes */}
+            <div className="col-left">
+              <LeftColumn
+                char={active}
+                onChange={updateChar}
+                onDelete={() => deleteChar(active.id)}
+              />
+            </div>
+
+            {/* RIGHT — dice, skills grid, scrollable inventory */}
+            <div className="col-right">
+              <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
+              <RightColumn
+                char={active}
+                onChange={updateChar}
+              />
+            </div>
+          </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state-icon">⚔</div>
+              <div>No adventurers yet. Add a character above.</div>
+            </div>
+          )
+        }
+
+        <ImportExport party={party} onImport={importParty} />
+
+        <div className="enc-launch-row">
+          <button className="btn primary" onClick={() => setPage("encounter")}>
+            ⚔ DM Encounter
+          </button>
+        </div>
+      </> )}
     </div>
   );
 }
