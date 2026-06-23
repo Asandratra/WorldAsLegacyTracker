@@ -3,7 +3,7 @@ import { BASE_STATS, SOCIAL_STATS, TECH_STAT_TREE, TECH_STATS, newEquipped } fro
 import { techKeyForSkill } from "../utils/Skill.js";
 import { sumModifier } from "../utils/Inventory.js";
 import EmojiPicker from "./EmojiPicker.jsx";
-import HpTracker from "./HpTracker.jsx";
+import VitalsCard from "./VitalsCard.jsx";
 //import StatBox from "./StatBox.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
@@ -42,7 +42,8 @@ function useCharSheet(char, onChange) {
   const maxMp  = getTotal("mp",char.maxMp) ?? 10;
   const mp     = char.mp    ?? maxMp;
   const mpPct  = maxMp > 0 ? Math.min(100, (mp / maxMp) * 100) : 0;
-  const exhPct = Math.min(100, char.exhaustion ?? 0);
+  const maxExhaustion = getTotal("exh", char.maxExhaustion) ?? 100;
+  const exhaustion     = Math.min(char.exhaustion ?? 0, maxExhaustion);
 
   /* equipment */
   const handleEquip = useCallback((item, hand) => {
@@ -105,7 +106,7 @@ function useCharSheet(char, onChange) {
     onChange({
       ...char,
       mp:         Math.max(0, (char.mp ?? 0) - skill.mp_cost),
-      exhaustion: Math.min(100, (char.exhaustion ?? 0) + skill.exhaustion_cost),
+      exhaustion: Math.min(char.maxExhaustion ?? 100, (char.exhaustion ?? 0) + skill.exhaustion_cost),
       skillset:   skillset.map(s =>
         s.id === skill.id ? { ...s, skill_mastery: (s.skill_mastery ?? 0) + 1 } : s
       ),
@@ -122,7 +123,8 @@ function useCharSheet(char, onChange) {
     update, updateMany,
     equipped, inventory, skillset, equippedSkills,
     weaponMastery,
-    mp, maxMp, mpPct, exhPct,
+    mp, maxMp, mpPct,
+    exhaustion, maxExhaustion,
     handleEquip, handleUnequip,
     handleSkillsetChange, handleEquippedSkillChange,
     handleSkillCharUpdate, handleSkillUse, handleAttack,
@@ -168,7 +170,7 @@ function RadarGrid({ cx, cy, r, n, rings = 5 }) {
 
 function StatRadar({ keys, statData, getMod, label: labelFn }) {
   const n = keys.length;
-  const cx = 160, cy = 140, r = 100;
+  const cx = 160, cy = 140, r = 70;
   const svgW = 320, svgH = 300;
 
   const basePts = keys.map((k, i) =>
@@ -189,16 +191,106 @@ function StatRadar({ keys, statData, getMod, label: labelFn }) {
       {keys.map((k, i) => {
         const lp    = labelPts[i];
         const total = Math.min((statData[k] ?? 0) + getMod(k), 510);
+        const bonus = Math.floor(total/15);
         const name  = labelFn(k);
         const anchor = lp.x < cx - 5 ? "end" : lp.x > cx + 5 ? "start" : "middle";
         return (
           <g key={k}>
-            <text x={lp.x} y={lp.y - 5}  textAnchor={anchor} className="radar-label-name">{name}</text>
-            <text x={lp.x} y={lp.y + 9} textAnchor={anchor} className="radar-label-val">{total}</text>
+            <text x={lp.x} y={lp.y - 9}  textAnchor={anchor} className="radar-label-name">{name}</text>
+            <text x={lp.x} y={lp.y + 0} textAnchor={anchor} className="radar-label-val">{total}</text>
+            {bonus>0 && (<text x={lp.x} y={lp.y + 9}  textAnchor={anchor} className="radar-label-name">D+{bonus}</text>)}
           </g>
         );
       })}
     </svg>
+  );
+}
+
+/* ── Stats edit modal — local draft, saved on confirm ── */
+const DraftRow = ({ statKey, displayLabel, draft, setVal, getMod }) => {
+  const base  = draft[statKey] ?? 0;
+  const mod   = getMod(statKey);
+  const total = Math.min(base + mod, 510);
+  const bonus = Math.floor(total / 15);
+  
+  return (
+    <div className="stat-edit-row">
+      <span className="stat-edit-label">{displayLabel}</span>
+      <div className="stat-edit-counter">
+        <button className="stat-edit-btn" onClick={() => setVal(statKey, base - 1)}>−</button>
+        <input 
+          className="stat-edit-input" 
+          type="number" 
+          min={0} 
+          max={STAT_MAX}
+          value={base}
+          onChange={e => setVal(statKey, e.target.value)} 
+        />
+        <button className="stat-edit-btn" onClick={() => setVal(statKey, base + 1)}>+</button>
+      </div>
+      <div className="stat-edit-right">
+        {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
+        <span className="stat-row-sep">=</span>
+        <span className="stat-row-total">{total}</span>
+        {bonus > 0 && <span className="stat-row-bonus">d+{bonus}</span>}
+      </div>
+    </div>
+  );
+};
+
+function StatsEditModal({ label, category, initialData, getMod, isTech, onSave, onClose }) {
+  const [draft, setDraft] = useState({ ...initialData });
+
+  const setVal = (key, val) => {
+    const clamped = Math.min(STAT_MAX, Math.max(0, parseInt(val) || 0));
+    setDraft(d => ({ ...d, [key]: clamped }));
+  };
+
+  const handleSave = () => {
+    onSave(category, draft);
+    onClose();
+  };
+
+  return (
+    <div className="stat-modal-overlay" onClick={onClose}>
+      <div className="stat-modal-content" onClick={e => e.stopPropagation()}>
+        <div className="stat-modal-header">
+          <h3>Edit {label} Stats</h3>
+          <button className="stat-modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="stat-edit-list">
+          {!isTech && Object.keys(initialData).map(key => (
+            <DraftRow 
+              key={key} 
+              statKey={key}
+              displayLabel={key.charAt(0).toUpperCase() + key.slice(1)} 
+              draft={draft}
+              setVal={setVal}
+              getMod={getMod}
+            />
+          ))}
+          {isTech && Object.entries(TECH_STAT_TREE).map(([primary, subs]) => (
+            <div key={primary}>
+              <div className="tech-stat-group-label" style={{ marginTop: 12, marginBottom: 4 }}>{primary}</div>
+              {subs.map(sub => (
+                <DraftRow 
+                  key={sub.toLowerCase()} 
+                  statKey={sub.toLowerCase()} 
+                  displayLabel={sub} 
+                  draft={draft}
+                  setVal={setVal}
+                  getMod={getMod}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="stat-modal-footer">
+          <button className="btn primary" onClick={handleSave}>Save</button>
+          <button className="btn" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -207,22 +299,13 @@ function StatsSection({ char, onChange, equipped }) {
   const [techCategory, setTechCategory] = useState(Object.keys(TECH_STAT_TREE)[0]);
   const [editing, setEditing] = useState(false);
 
-  const updateStat = useCallback(
-    (category, key, val) => {
-      const clamped = Math.min(STAT_MAX, Math.max(0, val));
-      onChange({ ...char, [category]: { ...char[category], [key]: clamped } });
-    },
-    [char, onChange]
-  );
-
   const getMod    = (key) => (equipped ? sumModifier(equipped, key) : 0);
   const getTotal  = (key, base) => Math.min(base + getMod(key), 510);
-  const diceBonus = (total) => Math.floor(total / 3);
 
   const TAB_CONFIG = {
     base:      { label: "Base",      category: "base_stats",   keys: BASE_STATS   },
     social:    { label: "Social",    category: "social_stats", keys: SOCIAL_STATS },
-    technique: { label: "Technique", category: "tech_stats",   keys: null         },
+    technique: { label: "Technique", category: "tech_stats",   keys: TECH_STATS   },
   };
 
   const cfg      = TAB_CONFIG[tab];
@@ -232,35 +315,12 @@ function StatsSection({ char, onChange, equipped }) {
     : cfg.keys;
 
   const shortLabel = (k) => {
-    const words = k.split("_");
-    if (words.length > 1) return words.map(w => w[0].toUpperCase()).join("");
-    return k.length > 4 ? k.slice(0, 4) : k.charAt(0).toUpperCase() + k.slice(1);
+    return k.charAt(0).toUpperCase() + k.slice(1);
   };
 
-  const EditRow = ({ category, statKey, displayLabel }) => {
-    const base  = statData[statKey] ?? 0;
-    const mod   = getMod(statKey);
-    const total = getTotal(statKey, base);
-    const bonus = tab === "technique" ? Math.floor(total / 12) : diceBonus(total);
-    return (
-      <div className="stat-edit-row">
-        <span className="stat-edit-label">{displayLabel}</span>
-        <div className="stat-edit-counter">
-          <button className="stat-edit-btn" onClick={() => updateStat(category, statKey, base - 1)}>−</button>
-          <input className="stat-edit-input" type="number" min={0} max={STAT_MAX}
-            value={base}
-            onChange={e => updateStat(category, statKey, parseInt(e.target.value) || 0)} />
-          <button className="stat-edit-btn" onClick={() => updateStat(category, statKey, Math.min(STAT_MAX, base + 1))}>+</button>
-        </div>
-        <div className="stat-edit-right">
-          {mod !== 0 && <span className={`stat-row-mod ${mod > 0 ? "pos" : "neg"}`}>{mod > 0 ? "+" : ""}{mod}</span>}
-          <span className="stat-row-sep">=</span>
-          <span className="stat-row-total">{total}</span>
-          {bonus > 0 && <span className="stat-row-bonus">+{bonus}d</span>}
-        </div>
-      </div>
-    );
-  };
+  const handleSave = useCallback((category, draft) => {
+    onChange({ ...char, [category]: draft });
+  }, [char, onChange]);
 
   return (
     <>
@@ -284,37 +344,26 @@ function StatsSection({ char, onChange, equipped }) {
         </div>
       )}
 
-      {/* ── Technique — list grouped by type ── */}
+      {/* ── Technique — category selector + radar ── */}
       {tab === "technique" && (() => {
-        const techSubs   = TECH_STAT_TREE[techCategory] ?? [];
-        const techKeys   = techSubs.map(s => s.toLowerCase());
-        const shortTech  = (k) => {
+        const techSubs  = TECH_STAT_TREE[techCategory] ?? [];
+        const techKeys  = techSubs.map(s => s.toLowerCase());
+        const shortTech = (k) => {
           const orig = techSubs.find(s => s.toLowerCase() === k) ?? k;
-          return orig.length > 4 ? orig.slice(0, 4) : orig;
+          return orig;
         };
         return (
           <>
-            {/* Category selector */}
             <div className="tech-category-tabs">
               {Object.keys(TECH_STAT_TREE).map(cat => (
-                <button
-                  key={cat}
+                <button key={cat}
                   className={`tech-category-tab ${techCategory === cat ? "active" : ""}`}
                   onClick={() => setTechCategory(cat)}
-                >
-                  {cat}
-                </button>
+                >{cat.slice(0,4)}</button>
               ))}
             </div>
-
-            {/* Single radar for selected category */}
             <div className="radar-wrapper">
-              <StatRadar
-                keys={techKeys}
-                statData={statData}
-                getMod={getMod}
-                label={shortTech}
-              />
+              <StatRadar keys={techKeys} statData={statData} getMod={getMod} label={shortTech} />
               <div className="radar-legend">
                 <span className="radar-legend-item base">■ Base</span>
                 <span className="radar-legend-item mod">■ + Equipment</span>
@@ -329,32 +378,15 @@ function StatsSection({ char, onChange, equipped }) {
       </button>
 
       {editing && (
-        <div className="stat-modal-overlay" onClick={() => setEditing(false)}>
-          <div className="stat-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="stat-modal-header">
-              <h3>Edit {TAB_CONFIG[tab].label} Stats</h3>
-              <button className="stat-modal-close" onClick={() => setEditing(false)}>×</button>
-            </div>
-            <div className="stat-edit-list">
-              {tab !== "technique" && flatKeys.map(key => (
-                <EditRow key={key} category={cfg.category} statKey={key}
-                  displayLabel={key.charAt(0).toUpperCase() + key.slice(1)} />
-              ))}
-              {tab === "technique" && Object.entries(TECH_STAT_TREE).map(([primary, subs]) => (
-                <div key={primary}>
-                  <div className="tech-stat-group-label" style={{ marginTop: 12, marginBottom: 4 }}>{primary}</div>
-                  {subs.map(sub => (
-                    <EditRow key={sub.toLowerCase()} category={cfg.category}
-                      statKey={sub.toLowerCase()} displayLabel={sub} />
-                  ))}
-                </div>
-              ))}
-            </div>
-            <div className="stat-modal-footer">
-              <button className="btn primary" onClick={() => setEditing(false)}>Done</button>
-            </div>
-          </div>
-        </div>
+        <StatsEditModal
+          label={TAB_CONFIG[tab].label}
+          category={cfg.category}
+          initialData={{ ...statData }}
+          getMod={getMod}
+          isTech={tab === "technique"}
+          onSave={handleSave}
+          onClose={() => setEditing(false)}
+        />
       )}
     </>
   );
@@ -369,7 +401,8 @@ export function LeftColumn({ char, onChange, onDelete }) {
   const {
     update, updateMany,
     equipped, weaponMastery,
-    mp, maxMp, mpPct, exhPct,
+    mp, maxMp, mpPct,
+    exhaustion, maxExhaustion,
     handleUnequip, handleAttack,
   } = useCharSheet(char, onChange);
 
@@ -408,47 +441,17 @@ export function LeftColumn({ char, onChange, onDelete }) {
           onChange={e => update("gold", Math.max(0, parseInt(e.target.value) || 0))} />
       </div>
 
-      {/* HP */}
-      <HpTracker hp={char.hp} maxHp={getTotal("hp", char.maxHp)} armor={getTotal("armor", char.armor)} onUpdate={updateMany} />
-
-      {/* MP & Exhaustion */}
-      <div className="card">
-        <div className="section-title">Mana &amp; Exhaustion</div>
-
-        <div className="vitals-bar-row">
-          <div className="vitals-bar-label">MP</div>
-          <div className="hp-bar-wrap">
-            <div className="hp-bar-fill" style={{ width: `${mpPct}%`, background: "linear-gradient(90deg,#3a4a8a,#6878c8)" }} />
-          </div>
-          <div className="hp-nums">
-            <input type="number" min={0} max={maxMp} value={mp}
-              onChange={e => update("mp", Math.min(maxMp, Math.max(0, parseInt(e.target.value) || 0)))} />
-            <span className="hp-sep">/</span>
-            <input type="number" min={1} value={maxMp}
-              onChange={e => update("maxMp", Math.max(1, parseInt(e.target.value) || 1))} />
-          </div>
-        </div>
-
-        <div className="vitals-bar-row" style={{ marginBottom: 0 }}>
-          <div className="vitals-bar-label">EXH</div>
-          <div className="hp-bar-wrap">
-            <div className="hp-bar-fill" style={{
-              width: `${exhPct}%`,
-              background: exhPct >= 100 ? "linear-gradient(90deg,#6a0000,#aa2020)"
-                : exhPct >= 60          ? "linear-gradient(90deg,#6a3a00,#b06a10)"
-                :                         "linear-gradient(90deg,#2a4a28,#4a7a48)"
-            }} />
-          </div>
-          <div className="hp-nums">
-            <input type="number" min={0} max={100} value={exhPct}
-              onChange={e => update("exhaustion", Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
-            <span className="hp-sep" style={{ fontSize: 12 }}>%</span>
-          </div>
-        </div>
-        {exhPct >= 100 && (
-          <div className="exhausted-warning">⚠ Exhausted — active skills disabled</div>
-        )}
-      </div>
+      {/* Unified Vitals Card */}
+      <VitalsCard
+        hp={char.hp}
+        maxHp={getTotal("hp", char.maxHp)}
+        armor={getTotal("armor", char.armor)}
+        mp={mp}
+        maxMp={maxMp}
+        exhaustion={exhaustion}
+        maxExhaustion={maxExhaustion}
+        onUpdate={updateMany}
+      />
 
       {/* Ability scores */}
       <div className="card">
@@ -482,7 +485,8 @@ export function RightColumn({ char, onChange }) {
   const {
     equipped, inventory,
     skillset, equippedSkills,
-    mp, maxMp, exhPct,
+    mp, maxMp,
+    exhaustion, maxExhaustion,
     handleEquip,
     handleSkillsetChange, handleEquippedSkillChange,
     handleSkillCharUpdate, handleSkillUse,
@@ -500,7 +504,8 @@ export function RightColumn({ char, onChange }) {
         skillset={skillset}
         equippedSkills={equippedSkills}
         mp={mp}
-        exhaustion={exhPct}
+        exhaustion={exhaustion}
+        maxExhaustion={maxExhaustion}
         tech_stats={char.tech_stats}
         onSkillUse={handleSkillUse}
         onSkillsetChange={handleSkillsetChange}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Select from "react-select";
 import { newSkill, SKILL_TYPE_TREE, ALL_SKILL_SUBTYPES } from "../utils/Skill.js";
 import { newPower } from "../utils/Inventory.js";
 import DiceInput from "./DiceInput.jsx";
@@ -12,10 +13,8 @@ export default function AddSkillModal({ onAdd, onClose }) {
     setForm(f => ({
       ...f,
       is_passive: val,
-      // Keep type/base_power as dice objects regardless — just hide the fields in the UI
       type: val ? null : (f.type ?? ALL_SKILL_SUBTYPES[0]),
       time_unit: val ? 0 : f.time_unit,
-      // base_power stays a dice object always; count:0 means "no power defined"
       base_power: f.base_power ?? newPower(),
     }));
   };
@@ -26,12 +25,31 @@ export default function AddSkillModal({ onAdd, onClose }) {
     onClose();
   };
 
-  // Group subtypes by primary for the <optgroup> select
-  const typeOptions = Object.entries(SKILL_TYPE_TREE).map(([primary, subs]) => (
-    <optgroup key={primary} label={primary}>
-      {subs.map(s => <option key={s} value={s}>{s}</option>)}
-    </optgroup>
-  ));
+  // 2. Format options for react-select (it expects objects: { label, options: [{ value, label }] })
+  const reactSelectOptions = Object.entries(SKILL_TYPE_TREE).map(([primary, subs]) => ({
+    label: primary,
+    options: subs.map(s => ({ value: s, label: s }))
+  }));
+
+  // Helper to find the currently selected option object matching form.type
+  const currentType = form.type 
+    ? { value: form.type, label: form.type } 
+    : { value: ALL_SKILL_SUBTYPES[0], label: ALL_SKILL_SUBTYPES[0] };
+
+  // 3. Optional: Basic styling object to match your modal's look
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: "var(--bg-input, #fff)", // Use your app's variables
+      borderColor: "var(--border-color, #ccc)",
+      minHeight: "38px",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: "var(--bg-modal, #fff)",
+      color: "var(--text-color, #000)",
+    })
+  };
 
   return (
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -67,16 +85,20 @@ export default function AddSkillModal({ onAdd, onClose }) {
           />
         </div>
 
-        {/* Type — hidden for passive */}
+        {/* Type — Filterable Select */}
         {!form.is_passive && (
           <div className="modal-field">
             <div className="label">Type</div>
-            <select
-              value={form.type ?? ALL_SKILL_SUBTYPES[0]}
-              onChange={e => set("type", e.target.value)}
-            >
-              {typeOptions}
-            </select>
+            <Select
+              options={reactSelectOptions}
+              value={currentType}
+              onChange={(selectedOption) => set("type", selectedOption.value)}
+              isSearchable={true} 
+              placeholder="Search skill type..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={customStyles} // Wire up custom styles
+            />
           </div>
         )}
 
@@ -87,7 +109,7 @@ export default function AddSkillModal({ onAdd, onClose }) {
             <input type="number" min={0} value={form.mp_cost} onChange={e => set("mp_cost", parseInt(e.target.value) || 0)} />
           </div>
           <div className="modal-field">
-            <div className="label">Exhaustion %</div>
+            <div className="label">Exhaustion</div>
             <input type="number" min={0} max={100} value={form.exhaustion_cost} onChange={e => set("exhaustion_cost", Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
           </div>
         </div>

@@ -19,7 +19,7 @@ export const TECH_STATS = Object.values(TECH_STAT_TREE).flat().map(s => s.toLowe
 
 function defaultTechStats() {
   const obj = {};
-  for (const key of TECH_STATS) obj[key.toLowerCase()] = 0;
+  for (const key of TECH_STATS) obj[key] = 0;
   return obj;
 }
 
@@ -47,6 +47,7 @@ export function newCharacter(name = "New Adventurer") {
     mp: 10,
     maxMp: 10,
     exhaustion: 0,
+    maxExhaustion: 100,
     armor: 0,
     gold: 0,
     base_stats: {
@@ -65,7 +66,7 @@ export function newCharacter(name = "New Adventurer") {
     equipped: newEquipped(),
     skillset: [],
     equippedSkills: [],
-    weapon_mastery: { slash: 0, blunt: 0, pierce: 0 },
+    weapon_mastery: { slash: 0, blunt: 0, pierce: 0 }
   };
 }
 
@@ -87,20 +88,4 @@ export function savePartyToStorage(party) {
   try {
     localStorage.setItem("dnd-party", JSON.stringify(party));
   } catch { /* silent */ }
-}
-
-/**
- * Calculate dice bonus from weapon mastery
- * 1 bonus die for every 24 points
- */
-export function getWeaponMasteryBonus(mastery) {
-  return Math.floor(mastery / 24);
-}
-
-/**
- * Calculate dice bonus from tech stats
- * 1 bonus die for every 12 points
- */
-export function getTechStatBonus(tech_stat) {
-  return Math.floor(tech_stat / 12);
 }

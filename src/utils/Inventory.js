@@ -3,7 +3,7 @@ export const EQUIPMENT_SLOTS = ["head", "upper", "lower", "accessory"];
 export const WEAPON_HAND_TYPES = ["single_hand", "dual_hand"];
 
 // All stats that can have modifiers on equipment/weapons
-export const MODIFIABLE_VITALS   = ["hp", "armor", "mp"];
+export const MODIFIABLE_VITALS   = ["hp", "armor", "mp", "exh"];
 export const BASE_STAT_KEYS      = ["strength", "spirit", "dexterity", "reaction", "agility", "speed"];
 export const SOCIAL_STAT_KEYS    = ["negotiation", "rhetoric", "seduction", "empathy", "intimidation",
                                     "humour", "insight", "creativity", "oration", "manipulation",

@@ -781,7 +781,7 @@ textarea {
 
 .radar-label-text {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 8px;
   fill: var(--ink-mid);
   font-weight: 600;
 }
@@ -1895,6 +1895,50 @@ export const statDisplayCss = `
     border-color: var(--gold);
     color: var(--gold);
     background: rgba(138,100,32,0.08);
+  }
+
+  /* ── Unified VitalsCard ── */
+  .vitals-card { }
+
+  .vitals-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .vitals-settings-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink-dim);
+    font-size: 14px;
+    width: 26px; height: 26px;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+    flex-shrink: 0;
+  }
+  .vitals-settings-btn:hover { border-color: var(--border-dark); color: var(--ink); }
+
+  .vitals-quick-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .vitals-quick-row .delta-row {
+    margin-top: 0;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .vitals-setting-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vitals-setting-row .stat-edit-input {
+    flex: 1;
   }
 `;
 
