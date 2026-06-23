@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { globalCss, equipmentCss, skillCss, powerModCss, statDisplayCss, encounterCss } from "./styles/GlobalCSS.js";
+import { globalCss, equipmentCss, skillCss, powerModCss, statDisplayCss, masteryAttackCss, encounterCss } from "./styles/GlobalCSS.js";
 import { newCharacter, loadPartyFromStorage, savePartyToStorage } from "./utils/Character.js";
 import AppHeader from "./components/AppHeader.jsx";
 import PartyTabs from "./components/PartyTabs.jsx";
@@ -10,7 +10,7 @@ import ImportExport from "./components/ImportExport.jsx";
 
 // Inject all CSS once into <head> — never re-evaluated on renders
 const styleEl = document.createElement("style");
-styleEl.textContent = globalCss + equipmentCss + skillCss + powerModCss + statDisplayCss + encounterCss;
+styleEl.textContent = globalCss + equipmentCss + skillCss + powerModCss + statDisplayCss + masteryAttackCss + encounterCss;
 document.head.appendChild(styleEl);
 
 const _initial = loadPartyFromStorage();
@@ -59,54 +59,53 @@ export default function App() {
         <EncounterPage onExit={() => setPage("sheet")} />
       ) : (
       <>
-        {/* ── Master head ── */}
-        <AppHeader partyCount={party.length} activeName={active?.name} />
+      {/* ── Masthead ── */}
+      <AppHeader partyCount={party.length} activeName={active?.name} />
 
-        {/* ── Party tabs (full width) ── */}
-        <PartyTabs
-          party={party}
-          activeId={active?.id}
-          onSelect={setActiveId}
-          onAdd={addCharacter}
-        />
+      {/* ── Party tabs (full width) ── */}
+      <PartyTabs
+        party={party}
+        activeId={active?.id}
+        onSelect={setActiveId}
+        onAdd={addCharacter}
+      />
 
-        {/* ── Two-column body ── */}
-        {active ? (
-          <div className="sheet-layout">
-            {/* LEFT — character info, vitals, stats, equipment, notes */}
-            <div className="col-left">
-              <LeftColumn
-                char={active}
-                onChange={updateChar}
-                onDelete={() => deleteChar(active.id)}
-              />
-            </div>
-
-            {/* RIGHT — dice, skills grid, scrollable inventory */}
-            <div className="col-right">
-              <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
-              <RightColumn
-                char={active}
-                onChange={updateChar}
-              />
-            </div>
+      {/* ── Two-column body ── */}
+      {active ? (
+        <div className="sheet-layout">
+          {/* LEFT — character info, vitals, stats, equipment, notes */}
+          <div className="col-left">
+            <LeftColumn
+              char={active}
+              onChange={updateChar}
+              onDelete={() => deleteChar(active.id)}
+            />
           </div>
-          ) : (
-            <div className="empty-state">
-              <div className="empty-state-icon">⚔</div>
-              <div>No adventurers yet. Add a character above.</div>
-            </div>
-          )
-        }
 
-        <ImportExport party={party} onImport={importParty} />
-
-        <div className="enc-launch-row">
-          <button className="btn primary" onClick={() => setPage("encounter")}>
-            ⚔ DM Encounter
-          </button>
+          {/* RIGHT — dice, skills grid, scrollable inventory */}
+          <div className="col-right">
+            <DiceRoller pool={dicePool} onPoolChange={setDicePool} />
+            <RightColumn
+              char={active}
+              onChange={updateChar}
+            />
+          </div>
         </div>
-      </> )}
+      ) : (
+        <div className="empty-state">
+          <div className="empty-state-icon">⚔</div>
+          <div>No adventurers yet. Add a character above.</div>
+        </div>
+      )}
+
+      <ImportExport party={party} onImport={importParty} />
+      <div className="enc-launch-row">
+        <button className="btn primary" onClick={() => setPage("encounter")}>
+          ⚔ DM Encounter
+        </button>
+      </div>
+      </>
+    )}
     </div>
   );
 }

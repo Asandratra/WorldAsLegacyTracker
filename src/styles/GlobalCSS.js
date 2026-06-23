@@ -1867,6 +1867,35 @@ export const statDisplayCss = `
     margin-bottom: 6px;
   }
 
+
+
+  /* ── Technique category selector tabs ── */
+  .tech-category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .tech-category-tab {
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    background: var(--paper-dark);
+    color: var(--ink-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .tech-category-tab:hover { border-color: var(--border-dark); color: var(--ink); }
+  .tech-category-tab.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(138,100,32,0.08);
+  }
 `;
 
 export const masteryAttackCss = `
@@ -1943,6 +1972,83 @@ export const masteryAttackCss = `
   /* ── Tech bonus pill on skill cells ── */
   .skill-cost-pill.pwr  { border-color: #6a3a00; color: #c06810; background: rgba(106,58,0,0.08); }
   .skill-cost-pill.tech { border-color: var(--green); color: var(--green-light); background: rgba(36,56,32,0.08); }
+
+  /* ── Radar SVG ── */
+  .radar-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  .radar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 2px;
+  }
+
+  /* Grid */
+  .radar-spoke {
+    stroke: var(--border);
+    stroke-width: 0.8;
+    stroke-dasharray: 3 3;
+  }
+  .radar-ring {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 0.6;
+    opacity: 0.6;
+  }
+
+  /* Blue polygon — base stats */
+  .radar-poly-base {
+    fill: rgba(52, 80, 160, 0.25);
+    stroke: #6878d0;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  /* Gold polygon — base + equipment total */
+  .radar-poly-mod {
+    fill: rgba(180, 130, 30, 0.18);
+    stroke: #c4a040;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-dasharray: 5 3;
+  }
+
+  /* Axis labels */
+  .radar-label-name {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    fill: var(--ink-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .radar-label-val {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--ink);
+  }
+
+  /* Legend */
+  .radar-legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+  .radar-legend-item {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .radar-legend-item.base { color: #6878d0; }
+  .radar-legend-item.mod  { color: #c4a040; }
 `;
 
 export const encounterCss = `
