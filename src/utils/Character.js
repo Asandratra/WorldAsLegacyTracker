@@ -89,3 +89,7 @@ export function savePartyToStorage(party) {
     localStorage.setItem("dnd-party", JSON.stringify(party));
   } catch { /* silent */ }
 }
+
+export function getWeaponMasteryBonus(mastery) {
+  return Math.floor(mastery / 15);
+}

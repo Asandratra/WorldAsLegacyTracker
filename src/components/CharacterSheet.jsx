@@ -8,6 +8,7 @@ import VitalsCard from "./VitalsCard.jsx";
 import InventoryList from "./InventoryList.jsx";
 import EquipmentPanel from "./EquipmentPanel.jsx";
 import SkillPanel from "./SkillPanel.jsx";
+import WeaponAttackPanel from "./WeaponAttackPanel.jsx"
 
 /* ─────────────────────────────────────────────
    Shared hook — derives all state & handlers
@@ -499,6 +500,12 @@ export function RightColumn({ char, onChange }) {
 
   return (
     <>
+      <WeaponAttackPanel
+        equipped={equipped}
+        weapon_mastery={char.weapon_mastery}
+        onCharUpdate={handleSkillCharUpdate}
+      />
+
       {/* Skills — 6×2 grid */}
       <SkillPanel
         skillset={skillset}

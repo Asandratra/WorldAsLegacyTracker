@@ -3,8 +3,8 @@ import { getWeaponMasteryBonus } from "../utils/Character.js";
 
 const AttackCell = memo(function AttackCell({ attackType, mastery, onAttack }) {
   const bonus = getWeaponMasteryBonus(mastery);
-  const nextMilestone = Math.ceil((mastery + 1) / 24) * 24;
-  const progress = mastery % 24;
+  const nextMilestone = Math.ceil((mastery + 1) / 15) * 15;
+  const progress = mastery % 15;
 
   return (
     <div className="attack-cell">
@@ -17,10 +17,10 @@ const AttackCell = memo(function AttackCell({ attackType, mastery, onAttack }) {
 
       <div className="attack-cell-mastery">
         <div className="mastery-bar-container">
-          <div className="mastery-bar-fill" style={{ width: `${(progress / 24) * 100}%` }}></div>
+          <div className="mastery-bar-fill" style={{ width: `${(progress / 15) * 100}%` }}></div>
         </div>
         <div className="mastery-text">
-          {progress}/24 {bonus > 0 && `(D+${bonus})`}
+          {progress}/15 {bonus > 0 && `(D+${bonus})`}
         </div>
       </div>
 
@@ -37,14 +37,14 @@ const AttackCell = memo(function AttackCell({ attackType, mastery, onAttack }) {
 
 const AttackListRow = memo(function AttackListRow({ attackType, mastery, onAttack }) {
   const bonus = getWeaponMasteryBonus(mastery);
-  const progress = mastery % 24;
+  const progress = mastery % 15;
 
   return (
     <div className="attack-list-row">
       <div className="attack-info">
         <div className="attack-name">{attackType}</div>
         <div className="attack-mastery-text">
-          Mastery: {mastery} ({progress}/24)
+          Mastery: {mastery} ({progress}/15)
           {bonus > 0 && ` · +${bonus} dice`}
         </div>
       </div>
