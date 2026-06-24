@@ -2093,6 +2093,186 @@ export const masteryAttackCss = `
   }
   .radar-legend-item.base { color: #6878d0; }
   .radar-legend-item.mod  { color: #c4a040; }
+  
+  /* ── Attack panel card ── */
+  .attack-panel-card { }
+
+  /* ── Attack grid 6 (desktop) ── */
+  .attack-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  /* On mobile, hide the grid and show the flat list instead */
+  .attack-list-mobile { display: flex; flex-direction: column; gap: 5px; }
+
+  @media (max-width: 1024px) and (min-width: 600px) {
+    .attack-grid-6 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .attack-list-mobile { display: none; }
+  }
+
+  @media (min-width: 600px) {
+    .attack-list-mobile { display: none; }
+  }
+  
+  @media (max-width: 599px) {
+    .attack-grid-6 { display: none; }
+  }
+
+  @media (max-width: 380px) {
+    .attack-list-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      text-align: center;
+    }
+    .attack-list-row .attack-btn {
+      width: 100%;
+    }
+  }
+
+  /* ── Attack cell (grid item) ── */
+  .attack-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 9px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    min-height: 100px;
+    transition: border-color 0.12s;
+  }
+  .attack-cell.empty {
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 5px,
+      rgba(192,160,96,0.06) 5px,
+      rgba(192,160,96,0.06) 6px
+    );
+    border-style: dashed;
+    opacity: 0.6;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+  }
+  .attack-cell-empty-label { font-family: 'IM Fell English', serif; font-size: 18px; color: var(--ink-faint); }
+
+  /* ── Attack cell top section ── */
+  .attack-cell-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .attack-type-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Crimson Text', serif;
+  }
+  
+  /* ── Mastery badge ── */
+  .mastery-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--red);
+    background: rgba(122,28,28,0.1);
+    border: 1px solid var(--red-dim);
+    border-radius: 2px;
+    padding: 1px 4px;
+    white-space: nowrap;
+  }
+
+  /* ── Mastery bar ── */
+  .attack-cell-mastery {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mastery-bar-container {
+    height: 8px;
+    background: var(--paper);
+    border: 1px solid var(--border-dark);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+  }
+  .mastery-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 1px;
+    transition: width 0.3s;
+  }
+  .mastery-text {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink-dim);
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Attack button ── */
+  .attack-btn {
+    flex-shrink: 0;
+    padding: 6px 12px; /* Marginally larger touch target for phones */
+    border: 1px solid var(--border-dark);
+    background: transparent;
+    color: var(--red);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    text-align: center;
+    width: auto; /* Overrides the destructive width: 100% inside flex rows */
+  }
+  .attack-btn:hover { background: rgba(122,28,28,0.1); border-color: var(--red-dim); }
+  .attack-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: var(--border); color: var(--ink-faint); }
+  .attack-cell .attack-btn {
+    margin-top: auto;
+    width: 100%;
+  }
+
+  /* ── Attack list row (mobile) ── */
+  .attack-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--paper-dark);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .attack-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .attack-name {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .attack-mastery-text {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    font-family: 'Cinzel', serif;
+  }
 `;
 
 export const encounterCss = `
