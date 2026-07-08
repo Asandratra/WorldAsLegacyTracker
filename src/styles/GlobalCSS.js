@@ -915,6 +915,160 @@ textarea {
   font-family: 'Cinzel', serif;
   min-width: 80px;
 }
+
+/* ── MOBILE OPTIMIZATIONS ── */
+@media (max-width: 899px) {
+  body {
+    font-size: 15.5px; /* Slightly smaller base for more content */
+    padding-bottom: 80px; /* Space for bottom nav if any */
+  }
+
+  .app-shell {
+    padding: 16px 12px 40px;
+    max-width: 100%;
+  }
+
+  .card {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  /* Larger touch targets */
+  .btn, 
+  .tab, 
+  .hp-btn, 
+  .inv-qty-btn, 
+  .skill-use-btn,
+  .attack-btn,
+  .enc-btn {
+    min-height: 48px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tab {
+    padding: 10px 16px;
+    font-size: 12.5px;
+  }
+
+  /* Better stacking */
+  .sheet-layout {
+    gap: 16px;
+  }
+
+  .char-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .char-avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 32px;
+    align-self: center;
+  }
+
+  .field-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Stats grid — make it 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Inventory & Skills */
+  .inv-scroll-inner {
+    max-height: 380px; /* Reasonable scroll */
+  }
+
+  .skill-grid-6x2 {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .skill-cell {
+    min-height: 92px;
+    padding: 10px 12px;
+  }
+
+  /* Dice & Buttons */
+  .dice-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .dice-row, .dice-btn {
+    min-height: 48px;
+  }
+
+  /* Modals — full width, better padding */
+  .modal {
+    padding: 20px 18px;
+    max-width: 100%;
+    margin: 12px;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+    min-height: 52px;
+  }
+
+  /* HP / Vitals */
+  .hp-bar-wrap {
+    height: 14px;
+  }
+
+  .hp-nums input {
+    width: 52px;
+    font-size: 15px;
+    padding: 6px 4px;
+  }
+
+  /* Reduce unnecessary whitespace */
+  .section-title {
+    font-size: 12.5px;
+    margin-bottom: 10px;
+  }
+
+  .label {
+    font-size: 9.5px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 380px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .masthead h1 {
+    font-size: 26px;
+    letter-spacing: 3px;
+  }
+
+  .skill-cell {
+    min-height: 86px;
+  }
+}
+
+/* Improve scrollable lists */
+.inv-scroll-inner,
+.skillbook-list,
+.enc-combatant-list,
+.enc-order-list {
+  -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+  overscroll-behavior: contain;
+}
+
+/* Larger hit areas for icons/buttons */
+.hp-btn, .inv-qty-btn, .skill-action-btn {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+}
 `;
 
 export const equipmentCss = `
@@ -992,7 +1146,18 @@ export const equipmentCss = `
     transition: all 0.12s;
   }
   .equip-unequip-btn:hover { border-color: var(--red-dim); color: var(--red); }
-`;
+
+  @media (max-width: 899px) {
+    .equip-slot {
+      padding: 12px 14px;
+      min-height: 56px;
+    }
+    .equip-slot-label {
+      width: 72px;
+      font-size: 10px;
+    }
+  }
+  `;
 
 export const skillCss = `
   /* ── Skill grid 6×2 (desktop right column) ── */
@@ -1262,7 +1427,17 @@ export const skillCss = `
     accent-color: var(--gold);
     cursor: pointer;
   }
-`;
+
+@media (max-width: 899px) {
+  .skill-use-btn.full {
+    padding: 12px;
+    font-size: 13px;
+  }
+  .equipped-skill-row {
+    padding: 10px 12px;
+  }
+}
+  `;
 
 export const powerModCss = `
   /* ── DiceInput ── */
@@ -2733,4 +2908,21 @@ export const encounterCss = `
   }
   .enc-action-remove:hover { opacity: 1; color: var(--red); }
 
-`;
+@media (max-width: 899px) {
+  .enc-body {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .enc-panel {
+    border: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .enc-panel:last-child {
+    border-bottom: none;
+  }
+  .enc-combatant-card {
+    padding: 12px;
+  }
+}
+
+  `;
