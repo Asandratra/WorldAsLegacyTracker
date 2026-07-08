@@ -110,7 +110,7 @@ export default function AddSkillModal({ onAdd, onClose }) {
           </div>
           <div className="modal-field">
             <div className="label">Exhaustion</div>
-            <input type="number" min={0} max={100} value={form.exhaustion_cost} onChange={e => set("exhaustion_cost", Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))} />
+            <input type="number" min={0} value={form.exhaustion_cost} onChange={e => set("exhaustion_cost", parseInt(e.target.value) || 0)} />
           </div>
         </div>
 

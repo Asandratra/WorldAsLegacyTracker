@@ -6,7 +6,7 @@ import AddSkillModal from "./AddSkillModal.jsx";
 function SkillCosts({ skill }) {
   const parts = [];
   if (skill.mp_cost > 0) parts.push(`${skill.mp_cost} MP`);
-  if (skill.exhaustion_cost > 0) parts.push(`${skill.exhaustion_cost}% EXH`);
+  if (skill.exhaustion_cost > 0) parts.push(`${skill.exhaustion_cost} EXH`);
   if (!skill.is_passive && skill.time_unit > 0) parts.push(`${skill.time_unit}t`);
   return parts.length
     ? <div className="skill-costs">{parts.join(" · ")}</div>

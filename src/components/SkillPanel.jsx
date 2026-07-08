@@ -3,8 +3,8 @@ import { skillBadge, getPrimaryType, techStatBonus } from "../utils/Skill.js";
 import { fmtPower } from "../utils/Inventory.js";
 import SkillbookModal from "./SkillBookModal.jsx";
 
-const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, onUse }) {
-  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
+const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, max_exhaustion, tech_stats, onUse }) {
+  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= max_exhaustion;
   const badge     = skillBadge(skill);
   const primary   = skill.type ? getPrimaryType(skill.type) : null;
   const techKey   = skill.type?.toLowerCase();
@@ -26,9 +26,9 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, o
         )}
         {!skill.is_passive && (
           <>
-            {skill.mp_cost > 0         && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
-            {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}%</span>}
-            {skill.base_power?.count > 0 && <span className="skill-cost-pill pwr">{fmtPower(skill.base_power)}</span>}
+            {skill.mp_cost > 0         && <span className="skill-cost-pill mp">{skill.mp_cost} MP</span>}
+            {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost} EXH</span>}
+            {skill.base_power?.count > 0 && <span className="skill-cost-pill pwr">{fmtPower(skill.base_power)} PWR</span>}
             {techBonus > 0 && <span className="skill-cost-pill tech">+{techBonus}d</span>}
           </>
         )}
@@ -40,9 +40,9 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, o
           onClick={onUse}
           disabled={!canUse}
           title={
-            exhaustion + skill.exhaustion_cost > 100 ? "Would exceed 100% exhaustion" :
+            exhaustion + skill.exhaustion_cost > 100 ? "Would exceed exhaustion" :
             mp < skill.mp_cost ? `Not enough MP (need ${skill.mp_cost})` :
-            `Use: −${skill.mp_cost} MP, +${skill.exhaustion_cost}% exhaustion`
+            `Use: −${skill.mp_cost} MP, +${skill.exhaustion_cost} exhaustion`
           }
         >
           Use
@@ -56,8 +56,8 @@ const SkillCell = memo(function SkillCell({ skill, mp, exhaustion, tech_stats, o
 });
 
 /* Fallback list row used on mobile where grid is collapsed */
-const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, tech_stats, onUse }) {
-  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= 100;
+const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, max_exhaustion, tech_stats, onUse }) {
+  const canUse    = !skill.is_passive && mp >= skill.mp_cost && exhaustion + skill.exhaustion_cost <= max_exhaustion;
   const badge     = skillBadge(skill);
   const primary   = skill.type ? getPrimaryType(skill.type) : null;
   const techKey   = skill.type?.toLowerCase();
@@ -81,7 +81,7 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, tech_st
           {!skill.is_passive && (
             <>
               {skill.mp_cost > 0         && <span className="skill-cost-pill mp">{skill.mp_cost}MP</span>}
-              {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}%</span>}
+              {skill.exhaustion_cost > 0 && <span className="skill-cost-pill exh">{skill.exhaustion_cost}</span>}
             </>
           )}
         </div>
@@ -94,7 +94,7 @@ const SkillListRow = memo(function SkillListRow({ skill, mp, exhaustion, tech_st
 });
 
 export default function SkillPanel({
-  skillset, equippedSkills, mp, exhaustion, tech_stats,
+  skillset, equippedSkills, mp, exhaustion, maxExhaustion, tech_stats,
   onSkillUse, onSkillsetChange, onEquippedChange,
 }) {
   const [bookOpen, setBookOpen] = useState(false);
@@ -132,6 +132,7 @@ export default function SkillPanel({
               skill={skill}
               mp={mp}
               exhaustion={exhaustion}
+              max_exhaustion={maxExhaustion}
               tech_stats={tech_stats}
               onUse={() => handleUse(skill)}
             />
@@ -154,6 +155,7 @@ export default function SkillPanel({
               skill={skill}
               mp={mp}
               exhaustion={exhaustion}
+              max_exhaustion={maxExhaustion}
               tech_stats={tech_stats}
               onUse={() => handleUse(skill)}
             />

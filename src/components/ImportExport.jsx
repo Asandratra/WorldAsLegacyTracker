@@ -14,12 +14,12 @@ export default function ImportExport({ activeId, party, onImport }) {
   };
   
   const exportCharacter = (character) => {
-    const blob = new Blob([JSON.stringify(character, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify([character], null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const characterName = character.name ? character.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'character';
     a.href = url;
-    a.download = `dungeon-character-${characterName}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `${characterName}-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
