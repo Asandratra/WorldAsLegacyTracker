@@ -456,7 +456,7 @@ export function LeftColumn({ char, onChange, onDelete }) {
 
       {/* Ability scores */}
       <div className="card">
-        <div className="section-title">Ability Scores</div>
+        <div className="section-title">Stat Scores</div>
         <StatsSection char={char} onChange={onChange} equipped={equipped} />
       </div>
 

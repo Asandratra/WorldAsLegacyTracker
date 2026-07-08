@@ -98,7 +98,7 @@ export default function App() {
         </div>
       )}
 
-      <ImportExport party={party} onImport={importParty} />
+      <ImportExport activeId={activeId} party={party} onImport={importParty} />
       <div className="enc-launch-row">
         <button className="btn primary" onClick={() => setPage("encounter")}>
           ⚔ DM Encounter

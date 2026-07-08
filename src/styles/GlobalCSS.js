@@ -2066,7 +2066,7 @@ export const masteryAttackCss = `
   /* Axis labels */
   .radar-label-name {
     font-family: 'Cinzel', serif;
-    font-size: 9px;
+    font-size: 8px;
     fill: var(--ink-dim);
     letter-spacing: 0.5px;
     text-transform: uppercase;
